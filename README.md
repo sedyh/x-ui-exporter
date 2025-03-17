@@ -1,10 +1,11 @@
 <p align="center">
-  <img src=".github/images/logo.png" alt="logo">
+  <img src="https://raw.githubusercontent.com/hteppl/3x-ui-exporter/main/.github/images/logo.png" alt="logo">
 </p>
 
 # 3X-UI Metrics Exporter
 
-[![GitHub Release](https://img.shields.io/github/v/release/hteppl/3x-ui-exporter?style=flat&color=blue)](https://github.com/hteppl/x-ui-exporter/releases/latest)
+[![GitHub Release](https://img.shields.io/github/v/release/hteppl/3x-ui-exporter?style=flat&color=blue)](https://github.com/hteppl/3x-ui-exporter/releases/latest)
+[![DockerHub](https://img.shields.io/badge/DockerHub-hteppl%2Fx--ui--exporter-blue)](https://hub.docker.com/r/hteppl/x-ui-exporter/)
 [![GitHub License](https://img.shields.io/github/license/kutovoys/marzban-exporter?color=greeen)](https://github.com/kutovoys/marzban-exporter/blob/main/LICENSE)
 
 3X-UI Metrics Exporter is an application designed to collect and export metrics from
@@ -14,11 +15,24 @@ the Prometheus monitoring system.
 
 ## Features
 
-- **Online users**: Tracks the total number of online users.
-- **Clients up/down**: Tracks total uploaded/downloaded bytes per client.
-- **Inbounds up/down**: Tracks total uploaded/downloaded bytes per inbound.
-- **XRay version**: Provides XRay version used by 3X-UI.
-- **System status**: Tracks metrics about 3X-UI panel resources usage.
+- **Online Monitoring**: Tracks the number of online users per 3X-UI instance.
+- **Traffic Metrics**: Tracks total uploaded/downloaded bytes per client or inbound.
+- **3X-UI Monitoring**: Provides XRay version and another metrics from 3X-UI.
+- **Version and Start Time Information**: Includes core version information and whether the core service has started
+  successfully.
+- **Configurable via Environment Variables and Command-line Arguments**: Allows customization and configuration through
+  both
+  environment variables and command-line arguments, making it easy to adjust settings.
+- **Support for Multiple Architectures**: Docker images are available for multiple architectures, including AMD64 and
+  ARM64,
+  ensuring compatibility across various deployment environments.
+- **Optional BasicAuth Protection**: Provides the option to secure the metrics endpoint with BasicAuth, adding an
+  additional layer of security.
+- **Integration with Prometheus**: Designed to integrate seamlessly with Prometheus, facilitating easy setup and
+  configuration for monitoring 3X-UI panel.
+- **Simplifies VPN Monitoring**: By providing a wide range of metrics, it simplifies the process of monitoring and
+  managing
+  VPN services, enhancing visibility into system performance and user activity.
 
 ## Metrics
 
@@ -129,10 +143,30 @@ Or using a YAML configuration file:
 The configuration file approach and the command-line arguments approach are alternative methods and cannot be combined.
 When using a configuration file, any other command-line arguments are ignored.
 
-### Docker + Docker Compose
+### Docker
 
 ```bash
-indev
+docker run -d \
+  -e PANEL_BASE_URL=<your-panel-url> \
+  -e PANEL_USERNAME=<your-panel-username> \
+  -e PANEL_PASSWORD=<your-panel-password> \
+  -p 9090:9090 \
+  hteppl/x-ui-exporter
+```
+
+### Docker Compose
+
+```bash
+version: "3"
+services:
+  x-ui-exporter:
+    image: hteppl/x-ui-exporter
+    environment:
+      - PANEL_BASE_URL=<your-panel-url>
+      - PANEL_USERNAME=<your-panel-username>
+      - PANEL_PASSWORD=<your-panel-password>
+    ports:
+      - "9090:9090"
 ```
 
 ### Integration with Prometheus
