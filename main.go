@@ -52,7 +52,7 @@ func BasicAuthMiddleware(username, password string) func(http.Handler) http.Hand
 func main() {
 	config.Parse(version, commit)
 
-	fmt.Println("3X-UI Exporter (Fork)", version)
+	fmt.Println("3X-UI Exporter (by hteppl)", version)
 
 	s := gocron.NewScheduler(time.Local)
 

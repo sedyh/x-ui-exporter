@@ -4,7 +4,7 @@
 
 # 3X-UI Metrics Exporter
 
-[![GitHub Release](https://img.shields.io/github/v/release/hteppl/3x-ui-exporter?style=flat&color=blue)](https://github.com/kutovoys/marzban-exporter/releases/latest)
+[![GitHub Release](https://img.shields.io/github/v/release/hteppl/3x-ui-exporter?style=flat&color=blue)](https://github.com/hteppl/x-ui-exporter/releases/latest)
 [![GitHub License](https://img.shields.io/github/license/kutovoys/marzban-exporter?color=greeen)](https://github.com/kutovoys/marzban-exporter/blob/main/LICENSE)
 
 3X-UI Metrics Exporter is an application designed to collect and export metrics from
