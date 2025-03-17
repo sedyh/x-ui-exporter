@@ -1,4 +1,6 @@
-![logo](.github/images/logo.png)
+<p align="center">
+  <img src=".github/images/logo.png" alt="logo">
+</p>
 
 # 3X-UI Metrics Exporter
 
