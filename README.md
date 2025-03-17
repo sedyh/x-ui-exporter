@@ -1,3 +1,5 @@
+![logo](.github/images/logo.png)
+
 # 3X-UI Metrics Exporter
 
 [![GitHub Release](https://img.shields.io/github/v/release/hteppl/3x-ui-exporter?style=flat&color=blue)](https://github.com/kutovoys/marzban-exporter/releases/latest)
