@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/images/logo.png" alt="logo">
+</p>
+
 # 3X-UI Metrics Exporter
 
 [![GitHub Release](https://img.shields.io/github/v/release/hteppl/3x-ui-exporter?style=flat&color=blue)](https://github.com/kutovoys/marzban-exporter/releases/latest)
@@ -59,22 +63,54 @@ System metrics (`version` param for `x_ui_xray_version`):
 
 ## Configuration
 
-3X-UI Metrics Exporter can be configured using environment variables or command-line arguments. When both are
-provided, command-line arguments take precedence.
+3X-UI Metrics Exporter can be configured using environment variables, command-line arguments, or a YAML configuration
+file. These are alternative methods of configuration, and you should choose one approach for your deployment.
 
 Below is a table of configuration options:
 
-| Variable Name       | Command-Line Argument | Required | Default Value              | Description                                                         |
-|---------------------|-----------------------|----------|----------------------------|---------------------------------------------------------------------|
-| `PANEL_BASE_URL`    | `--panel-base-url`    | Yes      | `https://<your-panel-url>` | URL of the 3X-UI management panel.                                  |
-| `PANEL_USERNAME`    | `--panel-username`    | Yes      | `<your-panel-username>`    | Username for the 3X-UI panel.                                       |
-| `PANEL_PASSWORD`    | `--panel-password`    | Yes      | `<your-panel-password>`    | Password for the 3X-UI panel.                                       |
-| `METRICS_PORT`      | `--metrics-port`      | No       | `9090`                     | Port for the metrics server.                                        |
-| `METRICS_PROTECTED` | `--metrics-protected` | No       | `false`                    | Enable BasicAuth protection for metrics endpoint.                   |
-| `METRICS_USERNAME`  | `--metrics-username`  | No       | `metricsUser`              | Username for BasicAuth, effective if `METRICS_PROTECTED` is `true`. |
-| `METRICS_PASSWORD`  | `--metrics-password`  | No       | `MetricsVeryHardPassword`  | Password for BasicAuth, effective if `METRICS_PROTECTED` is `true`. |
-| `UPDATE_INTERVAL`   | `--update-interval`   | No       | `30`                       | Interval (in seconds) for metrics update.                           |
-| `TIMEZONE`          | `--timezone`          | No       | `UTC`                      | Timezone for correct time display.                                  |
+| Variable Name       | Command-Line Argument | Required | Default Value              | Description                                                            |
+|---------------------|-----------------------|----------|----------------------------|------------------------------------------------------------------------|
+| `CONFIG_FILE`       | `--config-file`       | No       | N/A                        | Path to YAML configuration file. When provided, CLI flags are ignored. |
+| `PANEL_BASE_URL`    | `--panel-base-url`    | Yes      | `https://<your-panel-url>` | URL of the 3X-UI management panel.                                     |
+| `PANEL_USERNAME`    | `--panel-username`    | Yes      | `<your-panel-username>`    | Username for the 3X-UI panel.                                          |
+| `PANEL_PASSWORD`    | `--panel-password`    | Yes      | `<your-panel-password>`    | Password for the 3X-UI panel.                                          |
+| `METRICS_PORT`      | `--metrics-port`      | No       | `9090`                     | Port for the metrics server.                                           |
+| `METRICS_PROTECTED` | `--metrics-protected` | No       | `false`                    | Enable BasicAuth protection for metrics endpoint.                      |
+| `METRICS_USERNAME`  | `--metrics-username`  | No       | `metricsUser`              | Username for BasicAuth, effective if `METRICS_PROTECTED` is `true`.    |
+| `METRICS_PASSWORD`  | `--metrics-password`  | No       | `MetricsVeryHardPassword`  | Password for BasicAuth, effective if `METRICS_PROTECTED` is `true`.    |
+| `UPDATE_INTERVAL`   | `--update-interval`   | No       | `30`                       | Interval (in seconds) for metrics update.                              |
+| `TIMEZONE`          | `--timezone`          | No       | `UTC`                      | Timezone for correct time display.                                     |
+
+### YAML Configuration
+
+You can use a YAML configuration file to configure the exporter by providing the `--config-file` flag. When using a
+configuration file, all settings are read from the file and any command-line arguments are ignored. The YAML
+configuration file should contain the same parameters as the command-line arguments, but in YAML format.
+
+A sample configuration file `config-example.yaml` is provided with the project, which you can use as a template for your
+own configuration. The structure of the YAML file matches the command-line arguments.
+
+Example YAML configuration:
+
+```yaml
+# 3X-UI panel connection details
+panel-base-url: "https://your-panel-url"
+panel-username: "your-panel-username"
+panel-password: "your-panel-password"
+
+# General settings
+update-interval: 30
+timezone: "UTC"
+
+# Metrics server configuration
+metrics-port: 9090
+metrics-protected: false
+metrics-username: "metricsUser"
+metrics-password: "MetricsVeryHardPassword"
+```
+
+**Note:** When using a configuration file with the `--config-file` flag, all settings are taken from the configuration
+file, and any other command-line arguments are ignored.
 
 ## Usage
 
@@ -84,13 +120,16 @@ Below is a table of configuration options:
 /x-ui-exporter --panel-base-url=<your-panel-url> --panel-username=<your-panel-username> --panel-password=<your-panel-password>
 ```
 
-### Docker
+Or using a YAML configuration file:
 
 ```bash
-indev
+/x-ui-exporter --config-file=config.yaml
 ```
 
-### Docker Compose
+The configuration file approach and the command-line arguments approach are alternative methods and cannot be combined.
+When using a configuration file, any other command-line arguments are ignored.
+
+### Docker + Docker Compose
 
 ```bash
 indev
@@ -113,6 +152,7 @@ with your actual information.
 ## TODO
 
 - ⏳ Implement more useful metrics.
+- ⏳ Create public docker image.
 
 ## Contribute
 
