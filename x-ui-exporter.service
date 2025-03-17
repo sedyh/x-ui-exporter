@@ -1,0 +1,17 @@
+[Unit]
+Description=3X-UI Metrics Exporter for Prometheus
+Documentation=https://github.com/hteppl/3x-ui-exporter
+After=network.target
+
+[Service]
+User=x-ui-exporter
+Group=x-ui-exporter
+Type=simple
+ExecStart=/usr/local/bin/x-ui-exporter --config-file=/etc/x-ui-exporter/config.yaml
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

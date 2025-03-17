@@ -126,50 +126,103 @@ metrics-password: "MetricsVeryHardPassword"
 **Note:** When using a configuration file with the `--config-file` flag, all settings are taken from the configuration
 file, and any other command-line arguments are ignored.
 
-## Usage
+## Installation
 
-### CLI
+There are several ways to install and run the 3X-UI Metrics Exporter, depending on your environment and preferences. Choose the method that best suits your needs:
 
-```bash
-/x-ui-exporter --panel-base-url=<your-panel-url> --panel-username=<your-panel-username> --panel-password=<your-panel-password>
-```
+### Automatic Installation Script (Recommended)
 
-Or using a YAML configuration file:
+The easiest way to install the exporter is using our automatic installation script, which:
 
 ```bash
-/x-ui-exporter --config-file=config.yaml
+bash <(curl -fsSL raw.githubusercontent.com/hteppl/3x-ui-exporter/main/install.sh)
 ```
 
-The configuration file approach and the command-line arguments approach are alternative methods and cannot be combined.
-When using a configuration file, any other command-line arguments are ignored.
+During installation, you'll be prompted to enter:
+1. Your 3X-UI panel URL
+2. Admin username
+3. Admin password
 
-### Docker
+> **Note:** The script will validate your credentials to ensure they work with your panel.
+
+After installation, the service will be running automatically. You can manage it with:
+
+```bash
+sudo systemctl status x-ui-exporter    # Check status
+sudo systemctl restart x-ui-exporter   # Restart service
+sudo systemctl stop x-ui-exporter      # Stop service
+```
+
+### Manual CLI Installation
+
+If you prefer manual installation, download the latest binary from the [releases page](https://github.com/hteppl/3x-ui-exporter/releases) for your architecture.
+
+#### Running with command-line arguments:
+
+```bash
+./x-ui-exporter --panel-base-url="https://your-panel-url" \
+                --panel-username="your-panel-username" \
+                --panel-password="your-panel-password"
+```
+
+#### Running with a configuration file:
+
+1. Create a `config.yaml` file based on the example configuration
+2. Run the exporter:
+
+```bash
+./x-ui-exporter --config-file=config.yaml
+```
+
+> **Important:** The configuration file approach and command-line arguments cannot be combined. When using a configuration file, any command-line arguments are ignored.
+
+### Docker Installation
+
+Running with Docker is ideal for containerized environments and easy updates.
+
+#### Using Docker Run:
 
 ```bash
 docker run -d \
-  -e PANEL_BASE_URL=<your-panel-url> \
-  -e PANEL_USERNAME=<your-panel-username> \
-  -e PANEL_PASSWORD=<your-panel-password> \
+  --name x-ui-exporter \
+  -e PANEL_BASE_URL="https://your-panel-url" \
+  -e PANEL_USERNAME="your-panel-username" \
+  -e PANEL_PASSWORD="your-panel-password" \
   -p 9090:9090 \
   hteppl/x-ui-exporter
 ```
 
-### Docker Compose
+#### Using Docker Compose:
 
-```bash
+Create a `docker-compose.yml` file:
+
+```yaml
 version: "3"
 services:
   x-ui-exporter:
     image: hteppl/x-ui-exporter
+    container_name: x-ui-exporter
+    restart: unless-stopped
     environment:
-      - PANEL_BASE_URL=<your-panel-url>
-      - PANEL_USERNAME=<your-panel-username>
-      - PANEL_PASSWORD=<your-panel-password>
+      - PANEL_BASE_URL=https://your-panel-url
+      - PANEL_USERNAME=your-panel-username
+      - PANEL_PASSWORD=your-panel-password
+      # Optional settings
+      # - METRICS_PORT=9090
+      # - UPDATE_INTERVAL=30
     ports:
       - "9090:9090"
 ```
 
-### Integration with Prometheus
+Then run:
+
+```bash
+docker-compose up -d
+```
+
+> **Tip:** For secure production deployments, consider enabling the metrics authentication by setting `METRICS_PROTECTED=true` and configuring custom metrics username and password.
+
+## Integration with Prometheus
 
 To collect metrics with Prometheus, add the exporter to your prometheus.yml configuration file:
 
