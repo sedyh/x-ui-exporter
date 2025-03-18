@@ -2,8 +2,8 @@ name: DockerHub Publish
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "v*"
 
 jobs:
   docker:
@@ -27,7 +27,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
-            GIT_TAG=v1.2.1
+            GIT_TAG=v1.2.2
           tags: |
             hteppl/x-ui-exporter:latest
-            hteppl/x-ui-exporter:v1.2.1
+            hteppl/x-ui-exporter:v1.2.2

@@ -8,31 +8,31 @@
 [![DockerHub](https://img.shields.io/badge/DockerHub-hteppl%2Fx--ui--exporter-blue)](https://hub.docker.com/r/hteppl/x-ui-exporter/)
 [![GitHub License](https://img.shields.io/github/license/kutovoys/marzban-exporter?color=greeen)](https://github.com/kutovoys/marzban-exporter/blob/main/LICENSE)
 
-3X-UI Metrics Exporter is an application designed to collect and export metrics from
-the [3X-UI Web Panel](https://github.com/MHSanaei/3x-ui). This exporter enables monitoring of various aspects
-of the VPN service, such as node status, traffic, system metrics, and user information, making the data available for
-the Prometheus monitoring system.
+3X-UI Metrics Exporter is a comprehensive tool designed to collect and export metrics from
+the [3X-UI Web Panel](https://github.com/MHSanaei/3x-ui). This exporter provides detailed monitoring capabilities for
+various aspects of your 3X-UI, including node status, traffic flow, system performance, and user activity, making all data readily
+available for integration with the Prometheus monitoring system.
 
 ## Features
 
-- **Online Monitoring**: Tracks the number of online users per 3X-UI instance.
-- **Traffic Metrics**: Tracks total uploaded/downloaded bytes per client or inbound.
-- **3X-UI Monitoring**: Provides XRay version and another metrics from 3X-UI.
-- **Version and Start Time Information**: Includes core version information and whether the core service has started
+- **Online Monitoring**: Tracks the number of online users across your 3X-UI instance.
+- **Traffic Metrics**: Monitors total uploaded and downloaded bytes per client or inbound.
+- **3X-UI Monitoring**: Provides detailed XRay version information and additional operational metrics from 3X-UI.
+- **Version and Start Time Information**: Delivers core version information and confirms whether the core service has
+  started
   successfully.
-- **Configurable via Environment Variables and Command-line Arguments**: Allows customization and configuration through
-  both
-  environment variables and command-line arguments, making it easy to adjust settings.
-- **Support for Multiple Architectures**: Docker images are available for multiple architectures, including AMD64 and
-  ARM64,
-  ensuring compatibility across various deployment environments.
-- **Optional BasicAuth Protection**: Provides the option to secure the metrics endpoint with BasicAuth, adding an
-  additional layer of security.
-- **Integration with Prometheus**: Designed to integrate seamlessly with Prometheus, facilitating easy setup and
-  configuration for monitoring 3X-UI panel.
-- **Simplifies VPN Monitoring**: By providing a wide range of metrics, it simplifies the process of monitoring and
-  managing
-  VPN services, enhancing visibility into system performance and user activity.
+- **Flexible Configuration Options**: Supports customization through environment variables, command-line arguments, and
+  YAML configuration files,
+  providing maximum flexibility for different deployment scenarios.
+- **Multi-Architecture Support**: Features Docker images for multiple architectures, including AMD64 and ARM64,
+  ensuring compatibility across diverse deployment environments.
+- **Enhanced Security**: Offers optional BasicAuth protection for the metrics endpoint, providing an
+  additional layer of security for sensitive monitoring data.
+- **Seamless Prometheus Integration**: Designed to work flawlessly with Prometheus, enabling straightforward setup and
+  configuration for comprehensive 3X-UI panel monitoring.
+- **Comprehensive VPN Monitoring**: Simplifies the monitoring and management of VPN services by providing a rich set of
+  metrics,
+  significantly improving visibility into system performance and user activity.
 
 ## Metrics
 
@@ -123,12 +123,13 @@ metrics-username: "metricsUser"
 metrics-password: "MetricsVeryHardPassword"
 ```
 
-**Note:** When using a configuration file with the `--config-file` flag, all settings are taken from the configuration
-file, and any other command-line arguments are ignored.
+> **Note:** When using a configuration file with the `--config-file` flag, all settings 
+> are taken from the configuration file, and any other command-line arguments are ignored.
 
 ## Installation
 
-There are several ways to install and run the 3X-UI Metrics Exporter, depending on your environment and preferences. Choose the method that best suits your needs:
+There are several ways to install and run the 3X-UI Metrics Exporter, each tailored to different environments and
+deployment preferences. Select the installation method that aligns best with your infrastructure requirements:
 
 ### Automatic Installation Script (Recommended)
 
@@ -139,6 +140,7 @@ bash <(curl -fsSL raw.githubusercontent.com/hteppl/3x-ui-exporter/main/install.s
 ```
 
 During installation, you'll be prompted to enter:
+
 1. Your 3X-UI panel URL
 2. Admin username
 3. Admin password
@@ -155,7 +157,8 @@ sudo systemctl stop x-ui-exporter      # Stop service
 
 ### Manual CLI Installation
 
-If you prefer manual installation, download the latest binary from the [releases page](https://github.com/hteppl/3x-ui-exporter/releases) for your architecture.
+If you prefer manual installation, download the latest binary from
+the [releases page](https://github.com/hteppl/3x-ui-exporter/releases) for your architecture.
 
 #### Running with command-line arguments:
 
@@ -174,11 +177,13 @@ If you prefer manual installation, download the latest binary from the [releases
 ./x-ui-exporter --config-file=config.yaml
 ```
 
-> **Important:** The configuration file approach and command-line arguments cannot be combined. When using a configuration file, any command-line arguments are ignored.
+> **Important:** The configuration file approach and command-line arguments cannot be combined.
+> When using a configuration file, any command-line arguments are ignored.
 
 ### Docker Installation
 
-Running with Docker is ideal for containerized environments and easy updates.
+Running with Docker provides an optimal solution for containerized environments, offering simplified deployment and
+streamlined updates.
 
 #### Using Docker Run:
 
@@ -220,7 +225,8 @@ Then run:
 docker-compose up -d
 ```
 
-> **Tip:** For secure production deployments, consider enabling the metrics authentication by setting `METRICS_PROTECTED=true` and configuring custom metrics username and password.
+> **Security Recommendation:** For production deployments, it's strongly advised to enable metrics authentication by
+> setting `METRICS_PROTECTED=true` and configuring a secure custom metrics username and password.
 
 ## Integration with Prometheus
 
@@ -235,11 +241,6 @@ scrape_configs:
 
 Ensure to replace `<your-panel-url>`, `<your-panel-username>`, `<your-panel-password>`, and `<exporter-ip>`
 with your actual information.
-
-## TODO
-
-- ⏳ Implement more useful metrics.
-- ⏳ Create public docker image.
 
 ## Contribute
 

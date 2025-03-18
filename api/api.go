@@ -132,10 +132,10 @@ func FetchServerStatus(cookie *http.Cookie) {
 	xrayVersion := strings.ReplaceAll(response.Obj.Xray.Version, ".", "")
 	num, err := strconv.ParseFloat(xrayVersion, 64)
 	if err != nil {
-		fmt.Println("Error converting xrayVersion:", err)
-		metrics.XrayVersion.WithLabelValues(response.Obj.Xray.Version).Set(num)
-	} else {
+		log.Println("Error converting xrayVersion:", err)
 		metrics.XrayVersion.WithLabelValues(response.Obj.Xray.Version).Set(0)
+	} else {
+		metrics.XrayVersion.WithLabelValues(response.Obj.Xray.Version).Set(num)
 	}
 
 	// Panel metrics

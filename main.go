@@ -23,13 +23,16 @@ func init() { //
 	prometheus.MustRegister(
 		// User-related metrics
 		metrics.OnlineUsersCount,
-		// Inbounds-related metrics
+		// Client-related metrics
 		metrics.InboundUp,
 		metrics.InboundDown,
 		metrics.ClientUp,
 		metrics.ClientDown,
 		// System-related metrics
 		metrics.XrayVersion,
+		metrics.PanelThreads,
+		metrics.PanelMemory,
+		metrics.PanelUptime,
 	)
 }
 
