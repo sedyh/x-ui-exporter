@@ -34,7 +34,9 @@ func GetAuthToken() (*http.Cookie, error) {
 	cookieCache.Lock()
 	defer cookieCache.Unlock()
 
-	if cookieCache.Cookie.Name != "" && time.Now().Before(cookieCache.ExpiresAt) {
+	remainingTime := time.Until(cookieCache.ExpiresAt).Minutes()
+	if cookieCache.Cookie.Name != "" && remainingTime > 0 {
+		log.Printf("Login cookies will expire in %.2f minutes", remainingTime)
 		return &cookieCache.Cookie, nil
 	}
 
@@ -81,7 +83,7 @@ func GetAuthToken() (*http.Cookie, error) {
 	for _, cookie := range resp.Cookies() {
 		if cookie.Name == "3x-ui" {
 			cookieCache.Cookie = *cookie
-			cookieCache.ExpiresAt = cookie.Expires.Add(-6 * time.Hour)
+			cookieCache.ExpiresAt = time.Now().Add(time.Minute * 59)
 		}
 	}
 
@@ -179,9 +181,9 @@ func FetchInboundsList(cookie *http.Cookie) {
 }
 
 func createRequest(method, path string, cookie *http.Cookie) (*http.Request, error) {
-	url := fmt.Sprintf("%s%s", config.CLIConfig.BaseURL, path)
+	requestUrl := fmt.Sprintf("%s%s", config.CLIConfig.BaseURL, path)
 
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, requestUrl, nil)
 	if err != nil {
 		return nil, err
 	}

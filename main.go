@@ -55,7 +55,7 @@ func BasicAuthMiddleware(username, password string) func(http.Handler) http.Hand
 func main() {
 	config.Parse(version, commit)
 
-	fmt.Println("3X-UI Exporter (by hteppl)", version)
+	fmt.Println("3X-UI Exporter (https://github.com/hteppl/3x-ui-exporter/)", version)
 
 	s := gocron.NewScheduler(time.Local)
 
@@ -80,7 +80,7 @@ func main() {
 		api.FetchInboundsList(token)
 		log.Print("Finished collecting Inbounds metrics")
 
-		log.Print("Finished all metric collection")
+		log.Print("Finished all metric collection\n\n")
 	})
 
 	go s.StartAsync()
