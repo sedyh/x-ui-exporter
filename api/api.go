@@ -27,7 +27,14 @@ var cookieCache struct {
 }
 
 func createHttpClient() *http.Client {
-	return &http.Client{Timeout: 30 * time.Second}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	return &http.Client{
+		Transport: tr,
+		Timeout:   30 * time.Second,
+	}
 }
 
 func GetAuthToken() (*http.Cookie, error) {
