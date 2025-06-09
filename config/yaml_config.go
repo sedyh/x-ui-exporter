@@ -8,6 +8,7 @@ import (
 // YAMLConfig mirrors the CLI struct but with YAML struct tags.
 // This structure is used for parsing configuration from YAML files.
 type YAMLConfig struct {
+	Ip               string `yaml:"metrics-ip"`
 	Port             string `yaml:"metrics-port"`
 	ProtectedMetrics bool   `yaml:"metrics-protected"`
 	MetricsUsername  string `yaml:"metrics-username"`
@@ -40,6 +41,7 @@ func LoadYAMLConfig(path string) (*YAMLConfig, error) {
 // This is used to merge YAML configuration with command-line flags.
 func (y *YAMLConfig) ToCLI() CLI {
 	return CLI{
+		Ip:				  y.Ip,
 		Port:             y.Port,
 		ProtectedMetrics: y.ProtectedMetrics,
 		MetricsUsername:  y.MetricsUsername,
