@@ -14,7 +14,7 @@ panel-password: "your-password"
 
 # Skip SSL certificate verification (NOT recommended for production)
 # Use this only if your panel uses self-signed certificates
-# or when using p
+# or when using a private trusted network
 insecure-skip-verify: false
 
 # General settings
