@@ -25,6 +25,9 @@ update-interval: 30
 timezone: "UTC"
 
 # Metrics server configuration
+# Port for the metrics server (default: 0.0.0.0)
+metrics-ip: "0.0.0.0"
+
 # Port for the metrics server (default: 9090)
 metrics-port: "9090"
 

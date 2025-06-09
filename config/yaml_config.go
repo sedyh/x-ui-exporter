@@ -8,16 +8,17 @@ import (
 // YAMLConfig mirrors the CLI struct but with YAML struct tags.
 // This structure is used for parsing configuration from YAML files.
 type YAMLConfig struct {
-	Port               string `yaml:"metrics-port"`
-	ProtectedMetrics   bool   `yaml:"metrics-protected"`
-	MetricsUsername    string `yaml:"metrics-username"`
-	MetricsPassword    string `yaml:"metrics-password"`
-	UpdateInterval     int    `yaml:"update-interval"`
-	TimeZone           string `yaml:"timezone"`
-	BaseURL            string `yaml:"panel-base-url"`
-	ApiUsername        string `yaml:"panel-username"`
-	ApiPassword        string `yaml:"panel-password"`
-	Version            string `yaml:"version,omitempty"`
+	Ip               string `yaml:"metrics-ip"`
+	Port             string `yaml:"metrics-port"`
+	ProtectedMetrics bool   `yaml:"metrics-protected"`
+	MetricsUsername  string `yaml:"metrics-username"`
+	MetricsPassword  string `yaml:"metrics-password"`
+	UpdateInterval   int    `yaml:"update-interval"`
+	TimeZone         string `yaml:"timezone"`
+	BaseURL          string `yaml:"panel-base-url"`
+	ApiUsername      string `yaml:"panel-username"`
+	ApiPassword      string `yaml:"panel-password"`
+	Version          string `yaml:"version,omitempty"`
 	InsecureSkipVerify bool   `yaml:"insecure-skip-verify"`
 }
 
@@ -41,6 +42,7 @@ func LoadYAMLConfig(path string) (*YAMLConfig, error) {
 // This is used to merge YAML configuration with command-line flags.
 func (y *YAMLConfig) ToCLI() CLI {
 	return CLI{
+		Ip:				        y.Ip,
 		Port:             y.Port,
 		ProtectedMetrics: y.ProtectedMetrics,
 		MetricsUsername:  y.MetricsUsername,

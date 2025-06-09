@@ -13,6 +13,7 @@ var CLIConfig CLI
 type VersionFlag string
 
 type CLI struct {
+	Ip               string      `name:"metrics-ip" help:"Ip to listen on" default:"0.0.0.0" env:"METRICS_IP"`
 	Port             string      `name:"metrics-port" help:"Port to listen on" default:"9090" env:"METRICS_PORT"`
 	ProtectedMetrics bool        `name:"metrics-protected" help:"Whether metrics are protected by basic auth" default:"false" env:"METRICS_PROTECTED"`
 	MetricsUsername  string      `name:"metrics-username" help:"Username for metrics if protected by basic auth" default:"metricsUser" env:"METRICS_USERNAME"`
