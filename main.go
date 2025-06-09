@@ -88,5 +88,5 @@ func main() {
 	http.Handle("/metrics", BasicAuthMiddleware(config.CLIConfig.MetricsUsername,
 		config.CLIConfig.MetricsPassword)(promhttp.Handler()))
 	log.Printf("Starting server on %s:%s", config.CLIConfig.Ip, config.CLIConfig.Port)
-	log.Fatal(http.ListenAndServe(config.CLIConfig.Ip":"+config.CLIConfig.Port, nil))
+	log.Fatal(http.ListenAndServe(config.CLIConfig.Ip+":"+config.CLIConfig.Port, nil))
 }
