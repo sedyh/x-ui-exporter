@@ -15,6 +15,7 @@ import (
 	"time"
 	"x-ui-exporter/config"
 	"x-ui-exporter/metrics"
+	"crypto/tls"
 )
 
 // API logic partially was taken from the client3xui module
@@ -27,7 +28,16 @@ var cookieCache struct {
 }
 
 func createHttpClient() *http.Client {
-	return &http.Client{Timeout: 30 * time.Second}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: config.CLIConfig.InsecureSkipVerify,
+		},
+	}
+
+	return &http.Client{
+		Transport: tr,
+		Timeout:   30 * time.Second,
+	}
 }
 
 func GetAuthToken() (*http.Cookie, error) {
