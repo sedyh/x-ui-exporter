@@ -22,6 +22,7 @@ type CLI struct {
 	BaseURL          string      `name:"panel-base-url" help:"Panel base URL" env:"PANEL_BASE_URL" env:"PANEL_BASE_URL"`
 	ApiUsername      string      `name:"panel-username" help:"Panel username" env:"PANEL_USERNAME" env:"PANEL_USERNAME"`
 	ApiPassword      string      `name:"panel-password" help:"Panel password" env:"PANEL_PASSWORD" env:"PANEL_PASSWORD"`
+	InsecureSkipVerify bool      `name:"insecure-skip-verify" help:"Skip SSL certificate verification (INSECURE)" default:"false" env:"INSECURE_SKIP_VERIFY"`
 	ConfigFile       string      `name:"config-file" help:"Path to a YAML configuration file" env:"CONFIG_FILE"`
 	Version          VersionFlag `name:"version" help:"Print version information and quit"`
 }

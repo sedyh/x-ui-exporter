@@ -12,6 +12,11 @@ panel-username: "your-username"
 # Password for 3X-UI API authentication (required)
 panel-password: "your-password"
 
+# Skip SSL certificate verification (NOT recommended for production)
+# Use this only if your panel uses self-signed certificates
+# or when using p
+insecure-skip-verify: false
+
 # General settings
 # Interval in seconds between updates from the panel (default: 30)
 update-interval: 30
