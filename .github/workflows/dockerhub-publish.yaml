@@ -27,7 +27,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
-            GIT_TAG=v1.2.3
+            GIT_TAG=v1.2.4
           tags: |
             hteppl/x-ui-exporter:latest
-            hteppl/x-ui-exporter:v1.2.3
+            hteppl/x-ui-exporter:v1.2.4

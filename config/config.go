@@ -13,19 +13,19 @@ var CLIConfig CLI
 type VersionFlag string
 
 type CLI struct {
-	Ip               string      `name:"metrics-ip" help:"Ip to listen on" default:"0.0.0.0" env:"METRICS_IP"`
-	Port             string      `name:"metrics-port" help:"Port to listen on" default:"9090" env:"METRICS_PORT"`
-	ProtectedMetrics bool        `name:"metrics-protected" help:"Whether metrics are protected by basic auth" default:"false" env:"METRICS_PROTECTED"`
-	MetricsUsername  string      `name:"metrics-username" help:"Username for metrics if protected by basic auth" default:"metricsUser" env:"METRICS_USERNAME"`
-	MetricsPassword  string      `name:"metrics-password" help:"Password for metrics if protected by basic auth" default:"MetricsVeryHardPassword" env:"METRICS_PASSWORD"`
-	UpdateInterval   int         `name:"update-interval" help:"Interval for metrics update in seconds" default:"30" env:"UPDATE_INTERVAL"`
-	TimeZone         string      `name:"timezone" help:"Timezone used in the application" default:"UTC" env:"TIMEZONE"`
-	BaseURL          string      `name:"panel-base-url" help:"Panel base URL" env:"PANEL_BASE_URL" env:"PANEL_BASE_URL"`
-	ApiUsername      string      `name:"panel-username" help:"Panel username" env:"PANEL_USERNAME" env:"PANEL_USERNAME"`
-	ApiPassword      string      `name:"panel-password" help:"Panel password" env:"PANEL_PASSWORD" env:"PANEL_PASSWORD"`
-	InsecureSkipVerify bool      `name:"insecure-skip-verify" help:"Skip SSL certificate verification (INSECURE)" default:"false" env:"INSECURE_SKIP_VERIFY"`
-	ConfigFile       string      `name:"config-file" help:"Path to a YAML configuration file" env:"CONFIG_FILE"`
-	Version          VersionFlag `name:"version" help:"Print version information and quit"`
+	Ip                 string      `name:"metrics-ip" help:"Ip to listen on" default:"0.0.0.0" env:"METRICS_IP"`
+	Port               string      `name:"metrics-port" help:"Port to listen on" default:"9090" env:"METRICS_PORT"`
+	ProtectedMetrics   bool        `name:"metrics-protected" help:"Whether metrics are protected by basic auth" default:"false" env:"METRICS_PROTECTED"`
+	MetricsUsername    string      `name:"metrics-username" help:"Username for metrics if protected by basic auth" default:"metricsUser" env:"METRICS_USERNAME"`
+	MetricsPassword    string      `name:"metrics-password" help:"Password for metrics if protected by basic auth" default:"MetricsVeryHardPassword" env:"METRICS_PASSWORD"`
+	UpdateInterval     int         `name:"update-interval" help:"Interval for metrics update in seconds" default:"30" env:"UPDATE_INTERVAL"`
+	TimeZone           string      `name:"timezone" help:"Timezone used in the application" default:"UTC" env:"TIMEZONE"`
+	BaseURL            string      `name:"panel-base-url" help:"Panel base URL" env:"PANEL_BASE_URL" env:"PANEL_BASE_URL"`
+	ApiUsername        string      `name:"panel-username" help:"Panel username" env:"PANEL_USERNAME" env:"PANEL_USERNAME"`
+	ApiPassword        string      `name:"panel-password" help:"Panel password" env:"PANEL_PASSWORD" env:"PANEL_PASSWORD"`
+	InsecureSkipVerify bool        `name:"insecure-skip-verify" help:"Skip SSL certificate verification (INSECURE)" default:"false" env:"INSECURE_SKIP_VERIFY"`
+	ConfigFile         string      `name:"config-file" help:"Path to a YAML configuration file" env:"CONFIG_FILE"`
+	Version            VersionFlag `name:"version" help:"Print version information and quit"`
 }
 
 func (v VersionFlag) Decode(ctx *kong.DecodeContext) error { return nil }

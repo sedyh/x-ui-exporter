@@ -10,7 +10,8 @@
 
 3X-UI Metrics Exporter is a comprehensive tool designed to collect and export metrics from
 the [3X-UI Web Panel](https://github.com/MHSanaei/3x-ui). This exporter provides detailed monitoring capabilities for
-various aspects of your 3X-UI, including node status, traffic flow, system performance, and user activity, making all data readily
+various aspects of your 3X-UI, including node status, traffic flow, system performance, and user activity, making all
+data readily
 available for integration with the Prometheus monitoring system.
 
 ## Features
@@ -82,18 +83,20 @@ file. These are alternative methods of configuration, and you should choose one 
 
 Below is a table of configuration options:
 
-| Variable Name       | Command-Line Argument | Required | Default Value              | Description                                                            |
-|---------------------|-----------------------|----------|----------------------------|------------------------------------------------------------------------|
-| `CONFIG_FILE`       | `--config-file`       | No       | N/A                        | Path to YAML configuration file. When provided, CLI flags are ignored. |
-| `PANEL_BASE_URL`    | `--panel-base-url`    | Yes      | `https://<your-panel-url>` | URL of the 3X-UI management panel.                                     |
-| `PANEL_USERNAME`    | `--panel-username`    | Yes      | `<your-panel-username>`    | Username for the 3X-UI panel.                                          |
-| `PANEL_PASSWORD`    | `--panel-password`    | Yes      | `<your-panel-password>`    | Password for the 3X-UI panel.                                          |
-| `METRICS_PORT`      | `--metrics-port`      | No       | `9090`                     | Port for the metrics server.                                           |
-| `METRICS_PROTECTED` | `--metrics-protected` | No       | `false`                    | Enable BasicAuth protection for metrics endpoint.                      |
-| `METRICS_USERNAME`  | `--metrics-username`  | No       | `metricsUser`              | Username for BasicAuth, effective if `METRICS_PROTECTED` is `true`.    |
-| `METRICS_PASSWORD`  | `--metrics-password`  | No       | `MetricsVeryHardPassword`  | Password for BasicAuth, effective if `METRICS_PROTECTED` is `true`.    |
-| `UPDATE_INTERVAL`   | `--update-interval`   | No       | `30`                       | Interval (in seconds) for metrics update.                              |
-| `TIMEZONE`          | `--timezone`          | No       | `UTC`                      | Timezone for correct time display.                                     |
+| Variable Name          | Command-Line Argument    | Required | Default Value              | Description                                                            |
+|------------------------|--------------------------|----------|----------------------------|------------------------------------------------------------------------|
+| `CONFIG_FILE`          | `--config-file`          | No       | N/A                        | Path to YAML configuration file. When provided, CLI flags are ignored. |
+| `PANEL_BASE_URL`       | `--panel-base-url`       | Yes      | `https://<your-panel-url>` | URL of the 3X-UI management panel.                                     |
+| `PANEL_USERNAME`       | `--panel-username`       | Yes      | `<your-panel-username>`    | Username for the 3X-UI panel.                                          |
+| `PANEL_PASSWORD`       | `--panel-password`       | Yes      | `<your-panel-password>`    | Password for the 3X-UI panel.                                          | 
+| `INSECURE_SKIP_VERIFY` | `--insecure-skip-verify` | No       | `false`                    | Skip SSL certificate verification (INSECURE)                           |
+| `METRICS_IP`           | `--metrics-ip`           | No       | `0.0.0.0`                  | IP address for the metrics server.                                     |
+| `METRICS_PORT`         | `--metrics-port`         | No       | `9090`                     | Port for the metrics server.                                           |
+| `METRICS_PROTECTED`    | `--metrics-protected`    | No       | `false`                    | Enable BasicAuth protection for metrics endpoint.                      |
+| `METRICS_USERNAME`     | `--metrics-username`     | No       | `metricsUser`              | Username for BasicAuth, effective if `METRICS_PROTECTED` is `true`.    |
+| `METRICS_PASSWORD`     | `--metrics-password`     | No       | `MetricsVeryHardPassword`  | Password for BasicAuth, effective if `METRICS_PROTECTED` is `true`.    |
+| `UPDATE_INTERVAL`      | `--update-interval`      | No       | `30`                       | Interval (in seconds) for metrics update.                              |
+| `TIMEZONE`             | `--timezone`             | No       | `UTC`                      | Timezone for correct time display.                                     |
 
 ### YAML Configuration
 
@@ -111,19 +114,21 @@ Example YAML configuration:
 panel-base-url: "https://your-panel-url"
 panel-username: "your-panel-username"
 panel-password: "your-panel-password"
+insecure-skip-verify: false
 
 # General settings
 update-interval: 30
 timezone: "UTC"
 
 # Metrics server configuration
+metrics-ip: "0.0.0.0"
 metrics-port: 9090
 metrics-protected: false
 metrics-username: "metricsUser"
 metrics-password: "MetricsVeryHardPassword"
 ```
 
-> **Note:** When using a configuration file with the `--config-file` flag, all settings 
+> **Note:** When using a configuration file with the `--config-file` flag, all settings
 > are taken from the configuration file, and any other command-line arguments are ignored.
 
 ## Installation

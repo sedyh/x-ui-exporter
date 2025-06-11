@@ -1,6 +1,7 @@
 package api
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,7 +16,6 @@ import (
 	"time"
 	"x-ui-exporter/config"
 	"x-ui-exporter/metrics"
-	"crypto/tls"
 )
 
 // API logic partially was taken from the client3xui module
