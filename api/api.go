@@ -128,6 +128,9 @@ func FetchOnlineUsersCount(cookie *http.Cookie) {
 }
 
 func FetchServerStatus(cookie *http.Cookie) {
+	// Clear old version metric to avoid accumulating obsolete label values
+	metrics.XrayVersion.Reset()
+
 	body, err := sendRequest("/server/status", http.MethodPost, cookie)
 	if err != nil {
 		log.Println("Error making request for system stats:", err)
@@ -157,6 +160,14 @@ func FetchServerStatus(cookie *http.Cookie) {
 }
 
 func FetchInboundsList(cookie *http.Cookie) {
+	// Clear old metric values to avoid exposing stale data from previous
+	// updates. Resetting ensures obsolete label combinations are removed
+	// before setting new values.
+	metrics.InboundUp.Reset()
+	metrics.InboundDown.Reset()
+	metrics.ClientUp.Reset()
+	metrics.ClientDown.Reset()
+
 	body, err := sendRequest("/panel/api/inbounds/list", http.MethodGet, cookie)
 	if err != nil {
 		log.Println("Error making request for inbounds list:", err)
@@ -170,21 +181,23 @@ func FetchInboundsList(cookie *http.Cookie) {
 	}
 
 	for _, inbound := range response.Obj {
+		iid := strconv.Itoa(inbound.ID)
 		metrics.InboundUp.WithLabelValues(
-			strconv.Itoa(inbound.ID), inbound.Remark,
+			iid, inbound.Remark,
 		).Set(float64(inbound.Up))
 
 		metrics.InboundDown.WithLabelValues(
-			strconv.Itoa(inbound.ID), inbound.Remark,
+			iid, inbound.Remark,
 		).Set(float64(inbound.Down))
 
 		for _, client := range inbound.ClientStats {
+			cid := strconv.Itoa(client.ID)
 			metrics.ClientUp.WithLabelValues(
-				strconv.Itoa(client.ID), client.Email,
+				cid, client.Email,
 			).Set(float64(client.Up))
 
 			metrics.ClientDown.WithLabelValues(
-				strconv.Itoa(client.ID), client.Email,
+				cid, client.Email,
 			).Set(float64(client.Down))
 		}
 	}
