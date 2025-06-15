@@ -233,6 +233,28 @@ docker-compose up -d
 > **Security Recommendation:** For production deployments, it's strongly advised to enable metrics authentication by
 > setting `METRICS_PROTECTED=true` and configuring a secure custom metrics username and password.
 
+### Docker build
+
+You can build the Docker image locally for both AMD and ARM architectures using Docker Buildx:
+
+```bash
+docker buildx create --name multiarch-builder --use
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --build-arg GIT_TAG=$(git describe --tags --always) \
+  --build-arg GIT_COMMIT=$(git rev-parse --short HEAD) \
+  -t <registry_name>:<tag> \
+  --push .
+```
+
+#### Building for a Single Architecture
+
+To build for a specific architecture only:
+
+```bash
+docker buildx build --platform linux/amd64 -t ksusonic/3x-ui-exporter:latest .
+```
+
 ## Integration with Prometheus
 
 To collect metrics with Prometheus, add the exporter to your prometheus.yml configuration file:
