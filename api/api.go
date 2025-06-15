@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -40,6 +41,30 @@ var (
 		},
 		Timeout: 30 * time.Second,
 	}
+
+	// Response object pools
+	apiResponsePool = sync.Pool{
+		New: func() interface{} {
+			return &client3xui.ApiResponse{}
+		},
+	}
+	serverStatusPool = sync.Pool{
+		New: func() interface{} {
+			return &client3xui.ServerStatusResponse{}
+		},
+	}
+	inboundsResponsePool = sync.Pool{
+		New: func() interface{} {
+			return &client3xui.GetInboundsResponse{}
+		},
+	}
+
+	// Buffer pool for request bodies
+	bufferPool = sync.Pool{
+		New: func() interface{} {
+			return new(bytes.Buffer)
+		},
+	}
 )
 
 func GetAuthToken() (*http.Cookie, error) {
@@ -58,7 +83,12 @@ func GetAuthToken() (*http.Cookie, error) {
 		"password": {config.CLIConfig.ApiPassword},
 	}
 
-	req, err := http.NewRequest("POST", path, strings.NewReader(data.Encode()))
+	buf := bufferPool.Get().(*bytes.Buffer)
+	buf.Reset()
+	buf.WriteString(data.Encode())
+	defer bufferPool.Put(buf)
+
+	req, err := http.NewRequest("POST", path, buf)
 	if err != nil {
 		return nil, err
 	}
@@ -112,15 +142,16 @@ func FetchOnlineUsersCount(cookie *http.Cookie) {
 		return
 	}
 
-	var response client3xui.ApiResponse
-	if err := json.Unmarshal(body, &response); err != nil {
+	response := apiResponsePool.Get().(*client3xui.ApiResponse)
+	defer apiResponsePool.Put(response)
+
+	if err := json.Unmarshal(body, response); err != nil {
 		log.Println("Error unmarshaling response:", err)
 		return
 	}
 
 	var arr []json.RawMessage
-	err = json.Unmarshal(response.Obj, &arr)
-	if err != nil {
+	if err := json.Unmarshal(response.Obj, &arr); err != nil {
 		log.Println("Error converting Obj as array:", err)
 		return
 	}
@@ -138,8 +169,10 @@ func FetchServerStatus(cookie *http.Cookie) {
 		return
 	}
 
-	var response client3xui.ServerStatusResponse
-	if err := json.Unmarshal(body, &response); err != nil {
+	response := serverStatusPool.Get().(*client3xui.ServerStatusResponse)
+	defer serverStatusPool.Put(response)
+
+	if err := json.Unmarshal(body, response); err != nil {
 		log.Println("Error unmarshaling response:", err)
 		return
 	}
@@ -175,8 +208,10 @@ func FetchInboundsList(cookie *http.Cookie) {
 		return
 	}
 
-	var response client3xui.GetInboundsResponse
-	if err := json.Unmarshal(body, &response); err != nil {
+	response := inboundsResponsePool.Get().(*client3xui.GetInboundsResponse)
+	defer inboundsResponsePool.Put(response)
+
+	if err := json.Unmarshal(body, response); err != nil {
 		log.Println("Error unmarshaling response:", err)
 		return
 	}
