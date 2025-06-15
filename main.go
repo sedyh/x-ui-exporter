@@ -58,6 +58,7 @@ func main() {
 	fmt.Println("3X-UI Exporter (https://github.com/hteppl/3x-ui-exporter/)", version)
 
 	s := gocron.NewScheduler(time.Local)
+	defer s.Stop()
 
 	s.Every(config.CLIConfig.UpdateInterval).Seconds().Do(func() {
 		token, err := api.GetAuthToken()

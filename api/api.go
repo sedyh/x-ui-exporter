@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/digilolnet/client3xui"
 	"io"
 	"log"
 	"net/http"
@@ -16,29 +15,32 @@ import (
 	"time"
 	"x-ui-exporter/config"
 	"x-ui-exporter/metrics"
+
+	"github.com/digilolnet/client3xui"
 )
 
 // API logic partially was taken from the client3xui module
 // https://github.com/digilolnet/client3xui
 
-var cookieCache struct {
-	Cookie    http.Cookie
-	ExpiresAt time.Time
-	sync.Mutex
-}
+var (
+	cookieCache struct {
+		Cookie    http.Cookie
+		ExpiresAt time.Time
+		sync.Mutex
+	}
 
-func createHttpClient() *http.Client {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: config.CLIConfig.InsecureSkipVerify,
+	httpClient = &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: config.CLIConfig.InsecureSkipVerify,
+			},
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 10,
+			IdleConnTimeout:     90 * time.Second,
 		},
+		Timeout: 30 * time.Second,
 	}
-
-	return &http.Client{
-		Transport: tr,
-		Timeout:   30 * time.Second,
-	}
-}
+)
 
 func GetAuthToken() (*http.Cookie, error) {
 	cookieCache.Lock()
@@ -62,8 +64,7 @@ func GetAuthToken() (*http.Cookie, error) {
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	client := createHttpClient()
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +223,7 @@ func sendRequest(path, method string, cookie *http.Cookie) ([]byte, error) {
 		return nil, err
 	}
 
-	resp, err := createHttpClient().Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
