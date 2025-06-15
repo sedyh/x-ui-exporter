@@ -3,12 +3,10 @@ package config
 import (
 	"errors"
 	"fmt"
-	"github.com/alecthomas/kong"
-	"os"
 	"strings"
-)
 
-var CLIConfig CLI
+	"github.com/alecthomas/kong"
+)
 
 type VersionFlag string
 
@@ -20,9 +18,9 @@ type CLI struct {
 	MetricsPassword    string      `name:"metrics-password" help:"Password for metrics if protected by basic auth" default:"MetricsVeryHardPassword" env:"METRICS_PASSWORD"`
 	UpdateInterval     int         `name:"update-interval" help:"Interval for metrics update in seconds" default:"30" env:"UPDATE_INTERVAL"`
 	TimeZone           string      `name:"timezone" help:"Timezone used in the application" default:"UTC" env:"TIMEZONE"`
-	BaseURL            string      `name:"panel-base-url" help:"Panel base URL" env:"PANEL_BASE_URL" env:"PANEL_BASE_URL"`
-	ApiUsername        string      `name:"panel-username" help:"Panel username" env:"PANEL_USERNAME" env:"PANEL_USERNAME"`
-	ApiPassword        string      `name:"panel-password" help:"Panel password" env:"PANEL_PASSWORD" env:"PANEL_PASSWORD"`
+	BaseURL            string      `name:"panel-base-url" help:"Panel base URL" env:"PANEL_BASE_URL"`
+	ApiUsername        string      `name:"panel-username" help:"Panel username" env:"PANEL_USERNAME"`
+	ApiPassword        string      `name:"panel-password" help:"Panel password" env:"PANEL_PASSWORD"`
 	InsecureSkipVerify bool        `name:"insecure-skip-verify" help:"Skip SSL certificate verification (INSECURE)" default:"false" env:"INSECURE_SKIP_VERIFY"`
 	ConfigFile         string      `name:"config-file" help:"Path to a YAML configuration file" env:"CONFIG_FILE"`
 	Version            VersionFlag `name:"version" help:"Print version information and quit"`
@@ -40,9 +38,10 @@ func (v VersionFlag) BeforeApply(app *kong.Kong, vars kong.Vars) error {
 	return nil
 }
 
-func Parse(version, commit string) {
+func Parse(version, commit string) (*CLI, error) {
+	var config CLI
 	// Parse CLI flags first
-	ctx := kong.Parse(&CLIConfig,
+	_ = kong.Parse(&config,
 		kong.Name("x-ui-exporter"),
 		kong.Description("A command-line application for exporting 3X-UI metrics."),
 		kong.Vars{
@@ -52,22 +51,24 @@ func Parse(version, commit string) {
 	)
 
 	// Check if a config file is provided
-	if CLIConfig.ConfigFile != "" {
+	if config.ConfigFile != "" {
 		// Load YAML configuration
-		yamlConfig, err := LoadYAMLConfig(CLIConfig.ConfigFile)
+		yamlConfig, err := LoadYAMLConfig(config.ConfigFile)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error loading YAML configuration file: %v\n", err)
-			ctx.Exit(3)
+			return nil, fmt.Errorf("error loading YAML configuration file: %v", err)
 		}
 
 		// Use YAML config instead of CLI flags
-		CLIConfig = yamlConfig.ToCLI()
+		config = yamlConfig.ToCLI()
 	}
+
 	// Validate the final configuration
-	if err := validate(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		ctx.Exit(2)
+	validatedConfig, err := validate(&config)
+	if err != nil {
+		return nil, fmt.Errorf("validate config: %w", err)
 	}
+
+	return validatedConfig, nil
 }
 
 func removeTrailingSlash(s string) string {
@@ -77,16 +78,16 @@ func removeTrailingSlash(s string) string {
 	return s
 }
 
-func validate() error {
-	if CLIConfig.BaseURL == "" {
-		return errors.New("x-ui-exporter: error: --panel-base-url must be provided")
+func validate(config *CLI) (*CLI, error) {
+	if config.BaseURL == "" {
+		return nil, errors.New("x-ui-exporter: error: --panel-base-url must be provided")
 	}
-	if CLIConfig.ApiUsername == "" {
-		return errors.New("x-ui-exporter: error: --panel-username must be provided")
+	if config.ApiUsername == "" {
+		return nil, errors.New("x-ui-exporter: error: --panel-username must be provided")
 	}
-	if CLIConfig.ApiPassword == "" {
-		return errors.New("x-ui-exporter: error: --panel-password must be provided")
+	if config.ApiPassword == "" {
+		return nil, errors.New("x-ui-exporter: error: --panel-password must be provided")
 	}
-	CLIConfig.BaseURL = removeTrailingSlash(CLIConfig.BaseURL)
-	return nil
+	config.BaseURL = removeTrailingSlash(config.BaseURL)
+	return config, nil
 }

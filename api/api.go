@@ -1,11 +1,11 @@
 package api
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/digilolnet/client3xui"
 	"io"
 	"log"
 	"net/http"
@@ -14,33 +14,73 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"x-ui-exporter/config"
 	"x-ui-exporter/metrics"
+
+	"github.com/digilolnet/client3xui"
 )
 
-// API logic partially was taken from the client3xui module
-// https://github.com/digilolnet/client3xui
-
-var cookieCache struct {
-	Cookie    http.Cookie
-	ExpiresAt time.Time
-	sync.Mutex
+type APIConfig struct {
+	BaseURL            string
+	ApiUsername        string
+	ApiPassword        string
+	InsecureSkipVerify bool
 }
 
-func createHttpClient() *http.Client {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: config.CLIConfig.InsecureSkipVerify,
+type APIClient struct {
+	config     APIConfig
+	httpClient *http.Client
+}
+
+func NewAPIClient(cfg APIConfig) *APIClient {
+	return &APIClient{
+		config: cfg,
+		httpClient: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: cfg.InsecureSkipVerify,
+				},
+				MaxIdleConns:        100,
+				MaxIdleConnsPerHost: 10,
+				IdleConnTimeout:     90 * time.Second,
+			},
+			Timeout: 30 * time.Second,
+		},
+	}
+}
+
+var (
+	cookieCache struct {
+		Cookie    http.Cookie
+		ExpiresAt time.Time
+		sync.Mutex
+	}
+
+	// Response object pools
+	apiResponsePool = sync.Pool{
+		New: func() interface{} {
+			return &client3xui.ApiResponse{}
+		},
+	}
+	serverStatusPool = sync.Pool{
+		New: func() interface{} {
+			return &client3xui.ServerStatusResponse{}
+		},
+	}
+	inboundsResponsePool = sync.Pool{
+		New: func() interface{} {
+			return &client3xui.GetInboundsResponse{}
 		},
 	}
 
-	return &http.Client{
-		Transport: tr,
-		Timeout:   30 * time.Second,
+	// Buffer pool for request bodies
+	bufferPool = sync.Pool{
+		New: func() interface{} {
+			return new(bytes.Buffer)
+		},
 	}
-}
+)
 
-func GetAuthToken() (*http.Cookie, error) {
+func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 	cookieCache.Lock()
 	defer cookieCache.Unlock()
 
@@ -50,20 +90,24 @@ func GetAuthToken() (*http.Cookie, error) {
 		return &cookieCache.Cookie, nil
 	}
 
-	path := config.CLIConfig.BaseURL + "/login"
+	path := a.config.BaseURL + "/login"
 	data := url.Values{
-		"username": {config.CLIConfig.ApiUsername},
-		"password": {config.CLIConfig.ApiPassword},
+		"username": {a.config.ApiUsername},
+		"password": {a.config.ApiPassword},
 	}
 
-	req, err := http.NewRequest("POST", path, strings.NewReader(data.Encode()))
+	buf := bufferPool.Get().(*bytes.Buffer)
+	buf.Reset()
+	buf.WriteString(data.Encode())
+	defer bufferPool.Put(buf)
+
+	req, err := http.NewRequest("POST", path, buf)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	client := createHttpClient()
-	resp, err := client.Do(req)
+	resp, err := a.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -104,22 +148,23 @@ func GetAuthToken() (*http.Cookie, error) {
 	return &cookieCache.Cookie, nil
 }
 
-func FetchOnlineUsersCount(cookie *http.Cookie) {
-	body, err := sendRequest("/panel/inbound/onlines", http.MethodPost, cookie)
+func (a *APIClient) FetchOnlineUsersCount(cookie *http.Cookie) {
+	body, err := a.sendRequest("/panel/inbound/onlines", http.MethodPost, cookie)
 	if err != nil {
 		log.Println("Error making request for inbound onlines:", err)
 		return
 	}
 
-	var response client3xui.ApiResponse
-	if err := json.Unmarshal(body, &response); err != nil {
+	response := apiResponsePool.Get().(*client3xui.ApiResponse)
+	defer apiResponsePool.Put(response)
+
+	if err := json.Unmarshal(body, response); err != nil {
 		log.Println("Error unmarshaling response:", err)
 		return
 	}
 
 	var arr []json.RawMessage
-	err = json.Unmarshal(response.Obj, &arr)
-	if err != nil {
+	if err := json.Unmarshal(response.Obj, &arr); err != nil {
 		log.Println("Error converting Obj as array:", err)
 		return
 	}
@@ -127,18 +172,20 @@ func FetchOnlineUsersCount(cookie *http.Cookie) {
 	metrics.OnlineUsersCount.Set(float64(len(arr)))
 }
 
-func FetchServerStatus(cookie *http.Cookie) {
+func (a *APIClient) FetchServerStatus(cookie *http.Cookie) {
 	// Clear old version metric to avoid accumulating obsolete label values
 	metrics.XrayVersion.Reset()
 
-	body, err := sendRequest("/server/status", http.MethodPost, cookie)
+	body, err := a.sendRequest("/server/status", http.MethodPost, cookie)
 	if err != nil {
 		log.Println("Error making request for system stats:", err)
 		return
 	}
 
-	var response client3xui.ServerStatusResponse
-	if err := json.Unmarshal(body, &response); err != nil {
+	response := serverStatusPool.Get().(*client3xui.ServerStatusResponse)
+	defer serverStatusPool.Put(response)
+
+	if err := json.Unmarshal(body, response); err != nil {
 		log.Println("Error unmarshaling response:", err)
 		return
 	}
@@ -159,7 +206,7 @@ func FetchServerStatus(cookie *http.Cookie) {
 	metrics.PanelUptime.Set(float64(response.Obj.AppStats.Uptime))
 }
 
-func FetchInboundsList(cookie *http.Cookie) {
+func (a *APIClient) FetchInboundsList(cookie *http.Cookie) {
 	// Clear old metric values to avoid exposing stale data from previous
 	// updates. Resetting ensures obsolete label combinations are removed
 	// before setting new values.
@@ -168,14 +215,16 @@ func FetchInboundsList(cookie *http.Cookie) {
 	metrics.ClientUp.Reset()
 	metrics.ClientDown.Reset()
 
-	body, err := sendRequest("/panel/api/inbounds/list", http.MethodGet, cookie)
+	body, err := a.sendRequest("/panel/api/inbounds/list", http.MethodGet, cookie)
 	if err != nil {
 		log.Println("Error making request for inbounds list:", err)
 		return
 	}
 
-	var response client3xui.GetInboundsResponse
-	if err := json.Unmarshal(body, &response); err != nil {
+	response := inboundsResponsePool.Get().(*client3xui.GetInboundsResponse)
+	defer inboundsResponsePool.Put(response)
+
+	if err := json.Unmarshal(body, response); err != nil {
 		log.Println("Error unmarshaling response:", err)
 		return
 	}
@@ -203,8 +252,8 @@ func FetchInboundsList(cookie *http.Cookie) {
 	}
 }
 
-func createRequest(method, path string, cookie *http.Cookie) (*http.Request, error) {
-	requestUrl := fmt.Sprintf("%s%s", config.CLIConfig.BaseURL, path)
+func (a *APIClient) createRequest(method, path string, cookie *http.Cookie) (*http.Request, error) {
+	requestUrl := fmt.Sprintf("%s%s", a.config.BaseURL, path)
 
 	req, err := http.NewRequest(method, requestUrl, nil)
 	if err != nil {
@@ -216,13 +265,13 @@ func createRequest(method, path string, cookie *http.Cookie) (*http.Request, err
 	return req, nil
 }
 
-func sendRequest(path, method string, cookie *http.Cookie) ([]byte, error) {
-	req, err := createRequest(method, path, cookie)
+func (a *APIClient) sendRequest(path, method string, cookie *http.Cookie) ([]byte, error) {
+	req, err := a.createRequest(method, path, cookie)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := createHttpClient().Do(req)
+	resp, err := a.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
