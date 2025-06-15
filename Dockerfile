@@ -1,4 +1,4 @@
-FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.24.1 as builder
+FROM golang:1.24.1 AS builder
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
@@ -9,25 +9,32 @@ ARG GIT_COMMIT
 
 ENV CGO_ENABLED=0
 ENV GO111MODULE=on
+ENV GOOS=${TARGETOS}
+ENV GOARCH=${TARGETARCH}
 
-WORKDIR /go/src/github.com/hteppl/x-ui-exporter
+WORKDIR /build
 
-# Cache the download before continuing
-COPY go.mod go.mod
-COPY go.sum go.sum
-RUN go mod download
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 
-COPY .  .
+COPY . .
 
-RUN CGO_ENABLED=${CGO_ENABLED} GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
-  go build -ldflags="-X main.version=${GIT_TAG} -X main.commit=${GIT_COMMIT}" -a -installsuffix cgo -o /usr/bin/x-ui-exporter .
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    go build -ldflags="-w -s -X main.version=${GIT_TAG} -X main.commit=${GIT_COMMIT}" \
+    -trimpath \
+    -o /usr/bin/x-ui-exporter . && \
+    go clean -modcache
 
-FROM --platform=${BUILDPLATFORM:-linux/amd64} gcr.io/distroless/static:nonroot
+FROM gcr.io/distroless/static-debian12:nonroot
 
 LABEL org.opencontainers.image.source=https://github.com/hteppl/x-ui-exporter
 
-WORKDIR /
-COPY --from=builder /usr/bin/x-ui-exporter /
 USER nonroot:nonroot
 
-CMD ["/x-ui-exporter"]
+WORKDIR /
+COPY --from=builder --chown=nonroot:nonroot /usr/bin/x-ui-exporter /x-ui-exporter
+
+ENV PATH="/:${PATH}"
+
+ENTRYPOINT ["/x-ui-exporter"]
