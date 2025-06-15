@@ -36,10 +36,10 @@ func init() { //
 	)
 }
 
-func BasicAuthMiddleware(username, password string) func(http.Handler) http.Handler {
+func BasicAuthMiddleware(username, password string, protectedMetrics bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if config.CLIConfig.ProtectedMetrics {
+			if protectedMetrics {
 				user, pass, ok := r.BasicAuth()
 				if !ok || user != username || pass != password {
 					w.Header().Set("WWW-Authenticate", `Basic realm="metrics"`)
@@ -53,15 +53,25 @@ func BasicAuthMiddleware(username, password string) func(http.Handler) http.Hand
 }
 
 func main() {
-	config.Parse(version, commit)
+	cliConfig, err := config.Parse(version, commit)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fmt.Println("3X-UI Exporter (https://github.com/hteppl/3x-ui-exporter/)", version)
 
 	s := gocron.NewScheduler(time.Local)
 	defer s.Stop()
 
-	s.Every(config.CLIConfig.UpdateInterval).Seconds().Do(func() {
-		token, err := api.GetAuthToken()
+	client := api.NewAPIClient(api.APIConfig{
+		BaseURL:            cliConfig.BaseURL,
+		ApiUsername:        cliConfig.ApiUsername,
+		ApiPassword:        cliConfig.ApiPassword,
+		InsecureSkipVerify: cliConfig.InsecureSkipVerify,
+	})
+
+	s.Every(cliConfig.UpdateInterval).Seconds().Do(func() {
+		token, err := client.GetAuthToken()
 		if err != nil {
 			log.Println("Error getting auth token:", err)
 			return
@@ -70,15 +80,15 @@ func main() {
 		log.Print("Starting to collect metrics")
 
 		log.Print("Collecting UsersStats metrics")
-		api.FetchOnlineUsersCount(token)
+		client.FetchOnlineUsersCount(token)
 		log.Print("Finished collecting UsersStats metrics")
 
 		log.Print("Collecting Server and Panel metrics")
-		api.FetchServerStatus(token)
+		client.FetchServerStatus(token)
 		log.Print("Finished collecting Server and Panel metrics")
 
 		log.Print("Collecting Inbounds metrics")
-		api.FetchInboundsList(token)
+		client.FetchInboundsList(token)
 		log.Print("Finished collecting Inbounds metrics")
 
 		log.Print("Finished all metric collection\n\n")
@@ -86,8 +96,11 @@ func main() {
 
 	go s.StartAsync()
 
-	http.Handle("/metrics", BasicAuthMiddleware(config.CLIConfig.MetricsUsername,
-		config.CLIConfig.MetricsPassword)(promhttp.Handler()))
-	log.Printf("Starting server on %s:%s", config.CLIConfig.Ip, config.CLIConfig.Port)
-	log.Fatal(http.ListenAndServe(config.CLIConfig.Ip+":"+config.CLIConfig.Port, nil))
+	http.Handle("/metrics", BasicAuthMiddleware(
+		cliConfig.MetricsUsername,
+		cliConfig.MetricsPassword,
+		cliConfig.ProtectedMetrics,
+	)(promhttp.Handler()))
+	log.Printf("Starting server on %s:%s", cliConfig.Ip, cliConfig.Port)
+	log.Fatal(http.ListenAndServe(cliConfig.Ip+":"+cliConfig.Port, nil))
 }
