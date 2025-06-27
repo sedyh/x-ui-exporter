@@ -143,6 +143,9 @@ The easiest way to install the exporter is using our automatic installation scri
 ```bash
 bash <(curl -fsSL git.new/3x-ui-exporter)
 ```
+```bash
+bash <(curl -fsSL raw.githubusercontent.com/hteppl/3x-ui-exporter/main/install.sh)
+```
 
 During installation, you'll be prompted to enter:
 
