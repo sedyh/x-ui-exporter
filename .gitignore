@@ -1,4 +1,12 @@
+# IDE settings
+.idea
+
+# Build output
 dist/
+
+# Local exporter files
 marzban-exporter
 x-ui-exporter
+
+# Local config
 config.yaml
