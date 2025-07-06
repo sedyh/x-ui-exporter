@@ -13,6 +13,7 @@ type YAMLConfig struct {
 	ProtectedMetrics   bool   `yaml:"metrics-protected"`
 	MetricsUsername    string `yaml:"metrics-username"`
 	MetricsPassword    string `yaml:"metrics-password"`
+	ClientsBytesRows   int    `yaml:"clients-bytes-rows"`
 	UpdateInterval     int    `yaml:"update-interval"`
 	TimeZone           string `yaml:"timezone"`
 	BaseURL            string `yaml:"panel-base-url"`
@@ -47,6 +48,7 @@ func (y *YAMLConfig) ToCLI() CLI {
 		ProtectedMetrics:   y.ProtectedMetrics,
 		MetricsUsername:    y.MetricsUsername,
 		MetricsPassword:    y.MetricsPassword,
+		ClientsBytesRows:   y.ClientsBytesRows,
 		UpdateInterval:     y.UpdateInterval,
 		TimeZone:           y.TimeZone,
 		BaseURL:            y.BaseURL,

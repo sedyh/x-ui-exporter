@@ -92,6 +92,7 @@ Below is a table of configuration options:
 | `INSECURE_SKIP_VERIFY` | `--insecure-skip-verify` | No       | `false`                    | Skip SSL certificate verification (INSECURE)                          |
 | `METRICS_IP`           | `--metrics-ip`           | No       | `0.0.0.0`                  | IP address for the metrics server                                     |
 | `METRICS_PORT`         | `--metrics-port`         | No       | `9090`                     | Port for the metrics server                                           |
+|                        | `--clients-bytes-rows`   | No       | `0`                        | Limit rows for clients up/down bytes (0 = all data, else top N rows)  |
 | `METRICS_PROTECTED`    | `--metrics-protected`    | No       | `false`                    | Enable BasicAuth protection for metrics endpoint                      |
 | `METRICS_USERNAME`     | `--metrics-username`     | No       | `metricsUser`              | Username for BasicAuth, effective if `METRICS_PROTECTED` is `true`    |
 | `METRICS_PASSWORD`     | `--metrics-password`     | No       | `MetricsVeryHardPassword`  | Password for BasicAuth, effective if `METRICS_PROTECTED` is `true`    |
@@ -123,6 +124,7 @@ timezone: "UTC"
 # Metrics server configuration
 metrics-ip: "0.0.0.0"
 metrics-port: 9090
+clients-bytes-rows: 0
 metrics-protected: false
 metrics-username: "metricsUser"
 metrics-password: "MetricsVeryHardPassword"
@@ -138,11 +140,8 @@ deployment preferences. Select the installation method that aligns best with you
 
 ### Automatic Installation Script (Recommended)
 
-The easiest way to install the exporter is using our automatic installation script, which:
+The easiest way to install the exporter is using automatic installation script:
 
-```bash
-bash <(curl -fsSL git.new/3x-ui-exporter)
-```
 ```bash
 bash <(curl -fsSL raw.githubusercontent.com/hteppl/3x-ui-exporter/main/install.sh)
 ```

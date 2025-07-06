@@ -68,6 +68,7 @@ func main() {
 		ApiUsername:        cliConfig.ApiUsername,
 		ApiPassword:        cliConfig.ApiPassword,
 		InsecureSkipVerify: cliConfig.InsecureSkipVerify,
+		ClientsBytesRows:   cliConfig.ClientsBytesRows,
 	})
 
 	s.Every(cliConfig.UpdateInterval).Seconds().Do(func() {

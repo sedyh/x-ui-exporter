@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,6 +25,7 @@ type APIConfig struct {
 	ApiUsername        string
 	ApiPassword        string
 	InsecureSkipVerify bool
+	ClientsBytesRows   int
 }
 
 type APIClient struct {
@@ -239,15 +241,44 @@ func (a *APIClient) FetchInboundsList(cookie *http.Cookie) {
 			iid, inbound.Remark,
 		).Set(float64(inbound.Down))
 
-		for _, client := range inbound.ClientStats {
-			cid := strconv.Itoa(client.ID)
-			metrics.ClientUp.WithLabelValues(
-				cid, client.Email,
-			).Set(float64(client.Up))
+		n := a.config.ClientsBytesRows
+		if n == 0 {
+			for _, client := range inbound.ClientStats {
+				cid := strconv.Itoa(client.ID)
+				metrics.ClientUp.WithLabelValues(
+					cid, client.Email,
+				).Set(float64(client.Up))
 
-			metrics.ClientDown.WithLabelValues(
-				cid, client.Email,
-			).Set(float64(client.Down))
+				metrics.ClientDown.WithLabelValues(
+					cid, client.Email,
+				).Set(float64(client.Down))
+			}
+		} else {
+			// Top N by Upload
+			sortedUp := make([]client3xui.ClientStat, len(inbound.ClientStats))
+			copy(sortedUp, inbound.ClientStats)
+			sort.Slice(sortedUp, func(i, j int) bool {
+				return sortedUp[i].Up > sortedUp[j].Up
+			})
+			for i := 0; i < n && i < len(sortedUp); i++ {
+				client := sortedUp[i]
+				metrics.ClientUp.WithLabelValues(
+					strconv.Itoa(client.ID), client.Email,
+				).Set(float64(client.Up))
+			}
+
+			// Top N by Download
+			sortedDown := make([]client3xui.ClientStat, len(inbound.ClientStats))
+			copy(sortedDown, inbound.ClientStats)
+			sort.Slice(sortedDown, func(i, j int) bool {
+				return sortedDown[i].Down > sortedDown[j].Down
+			})
+			for i := 0; i < n && i < len(sortedDown); i++ {
+				client := sortedDown[i]
+				metrics.ClientDown.WithLabelValues(
+					strconv.Itoa(client.ID), client.Email,
+				).Set(float64(client.Down))
+			}
 		}
 	}
 }

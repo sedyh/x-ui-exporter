@@ -31,6 +31,10 @@ metrics-ip: "0.0.0.0"
 # Port for the metrics server (default: 9090)
 metrics-port: "9090"
 
+# Clients metrics bytes (0 = all data, else top N rows)
+# Limit rows for clients up/down bytes
+clients-bytes-rows: 0
+
 # Enable authentication for metrics endpoint
 metrics-protected: false
 
