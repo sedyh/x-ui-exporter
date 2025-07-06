@@ -92,7 +92,7 @@ Below is a table of configuration options:
 | `INSECURE_SKIP_VERIFY` | `--insecure-skip-verify` | No       | `false`                    | Skip SSL certificate verification (INSECURE)                          |
 | `METRICS_IP`           | `--metrics-ip`           | No       | `0.0.0.0`                  | IP address for the metrics server                                     |
 | `METRICS_PORT`         | `--metrics-port`         | No       | `9090`                     | Port for the metrics server                                           |
-|                        | `--clients-bytes-rows`   | No       | `0`                        | Limit rows for clients up/down bytes (0 = all data, else top N rows)  |
+| `CLIENTS_BYTES_ROWS`   | `--clients-bytes-rows`   | No       | `0`                        | Limit rows for clients up/down bytes (0 = all data, else top N rows)  |
 | `METRICS_PROTECTED`    | `--metrics-protected`    | No       | `false`                    | Enable BasicAuth protection for metrics endpoint                      |
 | `METRICS_USERNAME`     | `--metrics-username`     | No       | `metricsUser`              | Username for BasicAuth, effective if `METRICS_PROTECTED` is `true`    |
 | `METRICS_PASSWORD`     | `--metrics-password`     | No       | `MetricsVeryHardPassword`  | Password for BasicAuth, effective if `METRICS_PROTECTED` is `true`    |
