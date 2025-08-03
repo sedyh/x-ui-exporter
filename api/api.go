@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"sort"
@@ -88,7 +86,6 @@ func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 
 	remainingTime := time.Until(cookieCache.ExpiresAt).Minutes()
 	if cookieCache.Cookie.Name != "" && remainingTime > 0 {
-		log.Printf("Login cookies will expire in %.2f minutes", remainingTime)
 		return &cookieCache.Cookie, nil
 	}
 
@@ -113,7 +110,9 @@ func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -129,11 +128,11 @@ func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 	}
 
 	if !loginResp.Success {
-		return nil, errors.New(loginResp.Msg)
+		return nil, fmt.Errorf("authentication failed: %s", loginResp.Msg)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("authentication failed")
+		return nil, fmt.Errorf("authentication: code %s", resp.Status)
 	}
 
 	for _, cookie := range resp.Cookies() {
@@ -144,71 +143,65 @@ func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 	}
 
 	if cookieCache.Cookie.Name == "" {
-		return nil, errors.New("no cookies found in auth response")
+		return nil, fmt.Errorf("no cookies found in auth response")
 	}
 
 	return &cookieCache.Cookie, nil
 }
 
-func (a *APIClient) FetchOnlineUsersCount(cookie *http.Cookie) {
+func (a *APIClient) FetchOnlineUsersCount(cookie *http.Cookie) error {
 	body, err := a.sendRequest("/panel/inbound/onlines", http.MethodPost, cookie)
 	if err != nil {
-		log.Println("Error making request for inbound onlines:", err)
-		return
+		return fmt.Errorf("inbound onlines: %w", err)
 	}
 
 	response := apiResponsePool.Get().(*client3xui.ApiResponse)
 	defer apiResponsePool.Put(response)
 
 	if err := json.Unmarshal(body, response); err != nil {
-		log.Println("Error unmarshaling response:", err)
-		return
+		return fmt.Errorf("unmarshaling response: %w", err)
 	}
 
 	var arr []json.RawMessage
 	if err := json.Unmarshal(response.Obj, &arr); err != nil {
-		log.Println("Error converting Obj as array:", err)
-		return
+		return fmt.Errorf("converting Obj as array: %w", err)
 	}
 
 	metrics.OnlineUsersCount.Set(float64(len(arr)))
+
+	return nil
 }
 
-func (a *APIClient) FetchServerStatus(cookie *http.Cookie) {
+func (a *APIClient) FetchServerStatus(cookie *http.Cookie) error {
 	// Clear old version metric to avoid accumulating obsolete label values
 	metrics.XrayVersion.Reset()
 
 	body, err := a.sendRequest("/server/status", http.MethodPost, cookie)
 	if err != nil {
-		log.Println("Error making request for system stats:", err)
-		return
+		return fmt.Errorf("system stats: %w", err)
 	}
 
 	response := serverStatusPool.Get().(*client3xui.ServerStatusResponse)
 	defer serverStatusPool.Put(response)
 
 	if err := json.Unmarshal(body, response); err != nil {
-		log.Println("Error unmarshaling response:", err)
-		return
+		return fmt.Errorf("unmarshaling response: %w", err)
 	}
 
 	// XRay metrics
 	xrayVersion := strings.ReplaceAll(response.Obj.Xray.Version, ".", "")
-	num, err := strconv.ParseFloat(xrayVersion, 64)
-	if err != nil {
-		log.Println("Error converting xrayVersion:", err)
-		metrics.XrayVersion.WithLabelValues(response.Obj.Xray.Version).Set(0)
-	} else {
-		metrics.XrayVersion.WithLabelValues(response.Obj.Xray.Version).Set(num)
-	}
+	num, _ := strconv.ParseFloat(xrayVersion, 64)
+	metrics.XrayVersion.WithLabelValues(response.Obj.Xray.Version).Set(num)
 
 	// Panel metrics
 	metrics.PanelThreads.Set(float64(response.Obj.AppStats.Threads))
 	metrics.PanelMemory.Set(float64(response.Obj.AppStats.Mem))
 	metrics.PanelUptime.Set(float64(response.Obj.AppStats.Uptime))
+
+	return nil
 }
 
-func (a *APIClient) FetchInboundsList(cookie *http.Cookie) {
+func (a *APIClient) FetchInboundsList(cookie *http.Cookie) error {
 	// Clear old metric values to avoid exposing stale data from previous
 	// updates. Resetting ensures obsolete label combinations are removed
 	// before setting new values.
@@ -219,16 +212,14 @@ func (a *APIClient) FetchInboundsList(cookie *http.Cookie) {
 
 	body, err := a.sendRequest("/panel/api/inbounds/list", http.MethodGet, cookie)
 	if err != nil {
-		log.Println("Error making request for inbounds list:", err)
-		return
+		return fmt.Errorf("inbounds list: %w", err)
 	}
 
 	response := inboundsResponsePool.Get().(*client3xui.GetInboundsResponse)
 	defer inboundsResponsePool.Put(response)
 
 	if err := json.Unmarshal(body, response); err != nil {
-		log.Println("Error unmarshaling response:", err)
-		return
+		return fmt.Errorf("unmarshaling response: %w", err)
 	}
 
 	for _, inbound := range response.Obj {
@@ -281,6 +272,8 @@ func (a *APIClient) FetchInboundsList(cookie *http.Cookie) {
 			}
 		}
 	}
+
+	return nil
 }
 
 func (a *APIClient) createRequest(method, path string, cookie *http.Cookie) (*http.Request, error) {
@@ -306,7 +299,9 @@ func (a *APIClient) sendRequest(path, method string, cookie *http.Cookie) ([]byt
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	return io.ReadAll(resp.Body)
 }
