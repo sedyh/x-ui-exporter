@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -113,7 +112,9 @@ func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -129,11 +130,11 @@ func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 	}
 
 	if !loginResp.Success {
-		return nil, errors.New(loginResp.Msg)
+		return nil, fmt.Errorf("authentication failed: %s", loginResp.Msg)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("authentication failed")
+		return nil, fmt.Errorf("authentication: code %s", resp.Status)
 	}
 
 	for _, cookie := range resp.Cookies() {
@@ -144,7 +145,7 @@ func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 	}
 
 	if cookieCache.Cookie.Name == "" {
-		return nil, errors.New("no cookies found in auth response")
+		return nil, fmt.Errorf("no cookies found in auth response")
 	}
 
 	return &cookieCache.Cookie, nil
@@ -300,7 +301,9 @@ func (a *APIClient) sendRequest(path, method string, cookie *http.Cookie) ([]byt
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	return io.ReadAll(resp.Body)
 }

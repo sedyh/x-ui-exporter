@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 	"x-ui-exporter/api"
 	"x-ui-exporter/config"
@@ -72,11 +71,10 @@ func main() {
 		ClientsBytesRows:   cliConfig.ClientsBytesRows,
 	})
 
-	s.Every(cliConfig.UpdateInterval).Seconds().Do(func() {
+	_, err = s.Every(cliConfig.UpdateInterval).Seconds().Do(func() {
 		token, err := client.GetAuthToken()
 		if err != nil {
-			log.Printf("Error GetAuthToken: %v", err)
-			os.Exit(1)
+			log.Fatalf("get auth token: %v", err)
 		}
 
 		// non-blocking errors
@@ -92,6 +90,9 @@ func main() {
 			log.Printf("Error FetchInboundsList: %v", err)
 		}
 	})
+	if err != nil {
+		log.Fatalf("Schedule job: %v", err)
+	}
 
 	s.StartAsync()
 
