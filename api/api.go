@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"sort"
@@ -87,7 +86,6 @@ func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 
 	remainingTime := time.Until(cookieCache.ExpiresAt).Minutes()
 	if cookieCache.Cookie.Name != "" && remainingTime > 0 {
-		log.Printf("Login cookies will expire in %.2f minutes", remainingTime)
 		return &cookieCache.Cookie, nil
 	}
 
