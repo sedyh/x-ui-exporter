@@ -75,6 +75,7 @@ func main() {
 		token, err := client.GetAuthToken()
 		if err != nil {
 			log.Printf("get auth token: %v", err)
+			return
 		}
 
 		// non-blocking errors
