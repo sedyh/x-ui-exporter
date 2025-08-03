@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 	"x-ui-exporter/api"
 	"x-ui-exporter/config"
@@ -74,34 +75,32 @@ func main() {
 	s.Every(cliConfig.UpdateInterval).Seconds().Do(func() {
 		token, err := client.GetAuthToken()
 		if err != nil {
-			log.Println("Error getting auth token:", err)
-			return
+			log.Printf("Error GetAuthToken: %v", err)
+			os.Exit(1)
 		}
 
-		log.Print("Starting to collect metrics")
+		// non-blocking errors
+		if err := client.FetchOnlineUsersCount(token); err != nil {
+			log.Printf("Error FetchOnlineUsersCount: %v", err)
+		}
 
-		log.Print("Collecting UsersStats metrics")
-		client.FetchOnlineUsersCount(token)
-		log.Print("Finished collecting UsersStats metrics")
+		if err := client.FetchServerStatus(token); err != nil {
+			log.Printf("Error FetchServerStatus: %v", err)
+		}
 
-		log.Print("Collecting Server and Panel metrics")
-		client.FetchServerStatus(token)
-		log.Print("Finished collecting Server and Panel metrics")
-
-		log.Print("Collecting Inbounds metrics")
-		client.FetchInboundsList(token)
-		log.Print("Finished collecting Inbounds metrics")
-
-		log.Print("Finished all metric collection\n\n")
+		if err := client.FetchInboundsList(token); err != nil {
+			log.Printf("Error FetchInboundsList: %v", err)
+		}
 	})
 
-	go s.StartAsync()
+	s.StartAsync()
 
 	http.Handle("/metrics", BasicAuthMiddleware(
 		cliConfig.MetricsUsername,
 		cliConfig.MetricsPassword,
 		cliConfig.ProtectedMetrics,
 	)(promhttp.Handler()))
-	log.Printf("Starting server on %s:%s", cliConfig.Ip, cliConfig.Port)
+
+	log.Printf("Listening %s:%s", cliConfig.Ip, cliConfig.Port)
 	log.Fatal(http.ListenAndServe(cliConfig.Ip+":"+cliConfig.Port, nil))
 }
