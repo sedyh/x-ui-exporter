@@ -74,7 +74,7 @@ func main() {
 	_, err = s.Every(cliConfig.UpdateInterval).Seconds().Do(func() {
 		token, err := client.GetAuthToken()
 		if err != nil {
-			log.Fatalf("get auth token: %v", err)
+			log.Printf("get auth token: %v", err)
 		}
 
 		// non-blocking errors
