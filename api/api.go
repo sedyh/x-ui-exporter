@@ -150,9 +150,13 @@ func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 }
 
 func (a *APIClient) FetchOnlineUsersCount(cookie *http.Cookie) error {
-	body, err := a.sendRequest("/panel/inbound/onlines", http.MethodPost, cookie)
-	if err != nil {
-		return fmt.Errorf("inbound onlines: %w", err)
+	// Try the new path first for 3X-UI v2.7.0+
+	body, err := a.sendRequest("/panel/api/inbounds/onlines", http.MethodPost, cookie)
+	if err != nil || len(body) == 0 {
+		body, err = a.sendRequest("/panel/inbound/onlines", http.MethodPost, cookie)
+		if err != nil {
+			return fmt.Errorf("onlines (old path fallback): %w", err)
+		}
 	}
 
 	response := apiResponsePool.Get().(*client3xui.ApiResponse)
@@ -176,9 +180,13 @@ func (a *APIClient) FetchServerStatus(cookie *http.Cookie) error {
 	// Clear old version metric to avoid accumulating obsolete label values
 	metrics.XrayVersion.Reset()
 
-	body, err := a.sendRequest("/server/status", http.MethodPost, cookie)
-	if err != nil {
-		return fmt.Errorf("system stats: %w", err)
+	// Try GET first for 3X-UI v2.7.0+
+	body, err := a.sendRequest("/panel/api/server/status", http.MethodGet, cookie)
+	if err != nil || len(body) == 0 {
+		body, err = a.sendRequest("/server/status", http.MethodPost, cookie)
+		if err != nil {
+			return fmt.Errorf("server status (POST fallback): %w", err)
+		}
 	}
 
 	response := serverStatusPool.Get().(*client3xui.ServerStatusResponse)
