@@ -5,7 +5,7 @@ PURPLE='\033[1;35m'
 NC='\033[0m'
 
 step() {
-  echo -e "\n${GREEN}[$1/7] $2${NC}"
+  echo -e "\n${GREEN}[$1/8] $2${NC}"
 }
 
 # Check if script is run as root
@@ -247,18 +247,27 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Enable and start the service
-step 7 "Enabling and starting x-ui-exporter service..."
-systemctl enable x-ui-exporter.service
-if [ $? -ne 0 ]; then
-    echo "Failed to enable service. Installation aborted."
-    exit 1
-fi
+# Enable and start (or restart) the service
+step 8 "Enabling and starting x-ui-exporter service..."
+if systemctl is-active --quiet x-ui-exporter.service; then
+    echo "Service is already running. Restarting..."
+    systemctl restart x-ui-exporter.service
+    if [ $? -ne 0 ]; then
+        echo "Failed to restart service. Installation aborted."
+        exit 1
+    fi
+else
+    systemctl enable x-ui-exporter.service
+    if [ $? -ne 0 ]; then
+        echo "Failed to enable service. Installation aborted."
+        exit 1
+    fi
 
-systemctl start x-ui-exporter.service
-if [ $? -ne 0 ]; then
-    echo "Failed to start service. Installation aborted."
-    exit 1
+    systemctl start x-ui-exporter.service
+    if [ $? -ne 0 ]; then
+        echo "Failed to start service. Installation aborted."
+        exit 1
+    fi
 fi
 
 sudo systemctl status x-ui-exporter --no-pager
