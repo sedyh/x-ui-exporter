@@ -10,7 +10,6 @@
 [![GO Version](https://img.shields.io/github/go-mod/go-version/hteppl/3x-ui-exporter.svg)]()
 [![Downloads](https://img.shields.io/github/downloads/hteppl/3x-ui-exporter/total.svg)](https://github.com/hteppl/3x-ui-exporter/releases/latest)
 [![License](https://img.shields.io/badge/license-GNU%20AGPLv3-blue.svg?longCache=true)](LICENSE)
-[![Go Reference](https://pkg.go.dev/badge/github.com/hteppl/3x-ui-exporter.svg)](https://pkg.go.dev/github.com/hteppl/3x-ui-exporter)
 [![Go Report Card](https://goreportcard.com/badge/github.com/hteppl/3x-ui-exporter)](https://goreportcard.com/report/github.com/hteppl/3x-ui-exporter)
 
 3X-UI Metrics Exporter is a comprehensive tool designed to collect and export metrics from
