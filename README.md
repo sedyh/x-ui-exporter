@@ -4,13 +4,13 @@
 
 # X-UI Metrics Exporter
 
-[![Release](https://img.shields.io/github/v/release/sedyh/x-ui-exporter.svg)](https://github.com/sedyh/x-ui-exporter/releases)
-[![DockerHub](https://img.shields.io/badge/DockerHub-x--ui--exporter-blue)](https://hub.docker.com/r/sedyh/x-ui-exporter/)
-[![Build](https://img.shields.io/github/actions/workflow/status/sedyh/x-ui-exporter/release.yaml.svg)](https://github.com/sedyh/x-ui-exporter/actions)
-[![GO Version](https://img.shields.io/github/go-mod/go-version/sedyh/x-ui-exporter.svg)]()
-[![Downloads](https://img.shields.io/github/downloads/sedyh/x-ui-exporter/total.svg)](https://github.com/sedyh/x-ui-exporter/releases/latest)
-[![License](https://img.shields.io/badge/license-GNU%20AGPLv3-blue.svg?longCache=true)](LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/sedyh/x-ui-exporter)](https://goreportcard.com/report/github.com/sedyh/x-ui-exporter)
+[![Release](https://img.shields.io/github/v/release/sedyh/x-ui-exporter.svg?style=for-the-badge)](https://github.com/sedyh/x-ui-exporter/releases)
+[![DockerHub](https://img.shields.io/badge/DockerHub-x--ui--exporter-blue?style=for-the-badge)](https://hub.docker.com/r/sedyh/x-ui-exporter/)
+[![Build](https://img.shields.io/github/actions/workflow/status/sedyh/x-ui-exporter/release.yaml.svg?style=for-the-badge)](https://github.com/sedyh/x-ui-exporter/actions)
+[![GO Version](https://img.shields.io/github/go-mod/go-version/sedyh/x-ui-exporter.svg?style=for-the-badge)]()
+[![Downloads](https://img.shields.io/github/downloads/sedyh/x-ui-exporter/total.svg?style=for-the-badge)](https://github.com/sedyh/x-ui-exporter/releases/latest)
+[![License](https://img.shields.io/badge/license-GNU%20AGPLv3-blue.svg?longCache=true&style=for-the-badge)](LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sedyh/x-ui-exporter?style=for-the-badge)](https://goreportcard.com/report/github.com/sedyh/x-ui-exporter)
 
 X-UI Metrics Exporter is a simple tool designed to collect and export metrics from the [Original X-UI Web Panel](https://github.com/alireza0/x-ui). This exporter provides some monitoring capabilities for various aspects of your X-UI, including node status, traffic flow, system performance, and user activity, making all data readily available for integration with the Prometheus monitoring system.
 
