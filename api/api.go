@@ -7,16 +7,55 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 	"x-ui-exporter/metrics"
-
-	"github.com/digilolnet/client3xui"
 )
+
+type ApiResponse struct {
+	Success bool            `json:"success"`
+	Msg     string          `json:"msg"`
+	Obj     json.RawMessage `json:"obj"`
+}
+
+type ServerStatusResponse struct {
+	Success bool   `json:"success"`
+	Msg     string `json:"msg"`
+	Obj     struct {
+		Xray struct {
+			Version string `json:"version"`
+		} `json:"xray"`
+		AppStats struct {
+			Threads int64 `json:"threads"`
+			Mem     int64 `json:"mem"`
+			Uptime  int64 `json:"uptime"`
+		} `json:"appStats"`
+	} `json:"obj"`
+}
+
+type ClientStat struct {
+	ID    int    `json:"id"`
+	Email string `json:"email"`
+	Up    int64  `json:"up"`
+	Down  int64  `json:"down"`
+}
+
+type Inbound struct {
+	ID          int          `json:"id"`
+	Remark      string       `json:"remark"`
+	Up          int64        `json:"up"`
+	Down        int64        `json:"down"`
+	ClientStats []ClientStat `json:"clientStats"`
+}
+
+type GetInboundsResponse struct {
+	Success bool      `json:"success"`
+	Msg     string    `json:"msg"`
+	Obj     []Inbound `json:"obj"`
+}
 
 type APIConfig struct {
 	BaseURL            string
@@ -54,30 +93,6 @@ var (
 		ExpiresAt time.Time
 		sync.Mutex
 	}
-
-	// Response object pools
-	apiResponsePool = sync.Pool{
-		New: func() any {
-			return &client3xui.ApiResponse{}
-		},
-	}
-	serverStatusPool = sync.Pool{
-		New: func() any {
-			return &client3xui.ServerStatusResponse{}
-		},
-	}
-	inboundsResponsePool = sync.Pool{
-		New: func() any {
-			return &client3xui.GetInboundsResponse{}
-		},
-	}
-
-	// Buffer pool for request bodies
-	bufferPool = sync.Pool{
-		New: func() any {
-			return new(bytes.Buffer)
-		},
-	}
 )
 
 func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
@@ -90,21 +105,21 @@ func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 	}
 
 	path := a.config.BaseURL + "/login"
-	data := url.Values{
-		"username": {a.config.ApiUsername},
-		"password": {a.config.ApiPassword},
+	loginData := map[string]string{
+		"username": a.config.ApiUsername,
+		"password": a.config.ApiPassword,
 	}
 
-	buf := bufferPool.Get().(*bytes.Buffer)
-	buf.Reset()
-	buf.WriteString(data.Encode())
-	defer bufferPool.Put(buf)
-
-	req, err := http.NewRequest("POST", path, buf)
+	jsonData, err := json.Marshal(loginData)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	req, err := http.NewRequest("POST", path, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := a.httpClient.Do(req)
 	if err != nil {
@@ -150,19 +165,15 @@ func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 }
 
 func (a *APIClient) FetchOnlineUsersCount(cookie *http.Cookie) error {
-	// Try the new path first for X-UI v2.7.0+
-	body, err := a.sendRequest("/panel/api/inbounds/onlines", http.MethodPost, cookie)
-	if err != nil || len(body) == 0 {
-		body, err = a.sendRequest("/panel/inbound/onlines", http.MethodPost, cookie)
-		if err != nil {
-			return fmt.Errorf("onlines (old path fallback): %w", err)
-		}
+	// Legacy X-UI endpoint for online users
+	body, err := a.sendRequest("/xui/API/inbounds/onlines", http.MethodPost, cookie)
+	if err != nil {
+		return fmt.Errorf("onlines: %w", err)
 	}
 
-	response := apiResponsePool.Get().(*client3xui.ApiResponse)
-	defer apiResponsePool.Put(response)
+	var response ApiResponse
 
-	if err := json.Unmarshal(body, response); err != nil {
+	if err := json.Unmarshal(body, &response); err != nil {
 		return fmt.Errorf("unmarshaling response: %w", err)
 	}
 
@@ -180,19 +191,15 @@ func (a *APIClient) FetchServerStatus(cookie *http.Cookie) error {
 	// Clear old version metric to avoid accumulating obsolete label values
 	metrics.XrayVersion.Reset()
 
-	// Try GET first for X-UI v2.7.0+
-	body, err := a.sendRequest("/panel/api/server/status", http.MethodGet, cookie)
-	if err != nil || len(body) == 0 {
-		body, err = a.sendRequest("/server/status", http.MethodPost, cookie)
-		if err != nil {
-			return fmt.Errorf("server status (POST fallback): %w", err)
-		}
+	// Legacy X-UI endpoint for server status
+	body, err := a.sendRequest("/xui/API/server/status", http.MethodGet, cookie)
+	if err != nil {
+		return fmt.Errorf("server status: %w", err)
 	}
 
-	response := serverStatusPool.Get().(*client3xui.ServerStatusResponse)
-	defer serverStatusPool.Put(response)
+	var response ServerStatusResponse
 
-	if err := json.Unmarshal(body, response); err != nil {
+	if err := json.Unmarshal(body, &response); err != nil {
 		return fmt.Errorf("unmarshaling response: %w", err)
 	}
 
@@ -218,15 +225,14 @@ func (a *APIClient) FetchInboundsList(cookie *http.Cookie) error {
 	metrics.ClientUp.Reset()
 	metrics.ClientDown.Reset()
 
-	body, err := a.sendRequest("/panel/api/inbounds/list", http.MethodGet, cookie)
+	body, err := a.sendRequest("/xui/API/inbounds/", http.MethodGet, cookie)
 	if err != nil {
 		return fmt.Errorf("inbounds list: %w", err)
 	}
 
-	response := inboundsResponsePool.Get().(*client3xui.GetInboundsResponse)
-	defer inboundsResponsePool.Put(response)
+	var response GetInboundsResponse
 
-	if err := json.Unmarshal(body, response); err != nil {
+	if err := json.Unmarshal(body, &response); err != nil {
 		return fmt.Errorf("unmarshaling response: %w", err)
 	}
 
@@ -254,7 +260,7 @@ func (a *APIClient) FetchInboundsList(cookie *http.Cookie) error {
 			}
 		} else {
 			// Top N by Upload
-			sortedUp := make([]client3xui.ClientStat, len(inbound.ClientStats))
+			sortedUp := make([]ClientStat, len(inbound.ClientStats))
 			copy(sortedUp, inbound.ClientStats)
 			sort.Slice(sortedUp, func(i, j int) bool {
 				return sortedUp[i].Up > sortedUp[j].Up
@@ -267,7 +273,7 @@ func (a *APIClient) FetchInboundsList(cookie *http.Cookie) error {
 			}
 
 			// Top N by Download
-			sortedDown := make([]client3xui.ClientStat, len(inbound.ClientStats))
+			sortedDown := make([]ClientStat, len(inbound.ClientStats))
 			copy(sortedDown, inbound.ClientStats)
 			sort.Slice(sortedDown, func(i, j int) bool {
 				return sortedDown[i].Down > sortedDown[j].Down

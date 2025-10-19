@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sedyh/x-ui-exporter/main/.github/images/logo.png" alt="logo" width="500px">
+  <img src="https://raw.githubusercontent.com/sedyh/x-ui-exporter/main/.github/images/logo.png" alt="logo" width="450px">
 </p>
 
 # X-UI Metrics Exporter

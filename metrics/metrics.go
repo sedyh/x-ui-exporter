@@ -49,19 +49,19 @@ var (
 	PanelThreads = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "x_ui_panel_threads",
-			Help: "3X-UI panel threads",
+			Help: "X-UI panel threads",
 		},
 	)
 	PanelMemory = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "x_ui_panel_memory",
-			Help: "3X-UI panel memory usage",
+			Help: "X-UI panel memory usage",
 		},
 	)
 	PanelUptime = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "x_ui_panel_uptime",
-			Help: "3X-UI panel uptime",
+			Help: "X-UI panel uptime",
 		},
 	)
 )
