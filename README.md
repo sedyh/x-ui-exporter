@@ -14,6 +14,8 @@
 
 X-UI Metrics Exporter is a simple tool designed to collect and export metrics from the [Original X-UI Web Panel](https://github.com/alireza0/x-ui). This exporter provides some monitoring capabilities for various aspects of your X-UI, including node status, traffic flow, system performance, and user activity, making all data readily available for integration with the Prometheus monitoring system.
 
+This is the fork of [3X-UI Metrics Exporter](github.com/hteppl/3x-ui-exporter) which is made by [hteppl](github.com/hteppl). It was moddified to support the legacy panel versions.
+
 ## Features
 
 - **Online Monitoring**: Tracks the number of online users across your X-UI instance.
