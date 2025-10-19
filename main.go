@@ -58,7 +58,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("3X-UI Exporter (https://github.com/hteppl/3x-ui-exporter/)", version)
+	fmt.Println("X-UI Exporter (https://github.com/sedyh/x-ui-exporter/)", version)
 
 	s := gocron.NewScheduler(time.Local)
 	defer s.Stop()

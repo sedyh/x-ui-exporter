@@ -19,7 +19,7 @@ jobs:
           DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
         with:
-          destination_container_repo: hteppl/x-ui-exporter
+          destination_container_repo: sedyh/x-ui-exporter
           provider: dockerhub
-          short_description: "Prometheus metrics exporter for 3X-UI panel"
+          short_description: "Prometheus metrics exporter for X-UI panel"
           readme_file: "README.md"

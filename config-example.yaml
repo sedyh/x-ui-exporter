@@ -1,15 +1,15 @@
-# 3X-UI Exporter Configuration Example
-# This file contains all the configuration options available for the 3X-UI Exporter
+# X-UI Exporter Configuration Example
+# This file contains all the configuration options available for the X-UI Exporter
 # Command-line flags will override these settings if provided
 
-# 3X-UI panel connection details
-# Base URL of the 3X-UI panel (required)
+# X-UI panel connection details
+# Base URL of the X-UI panel (required)
 panel-base-url: "https://your-panel-url"
 
-# Username for 3X-UI API authentication (required)
+# Username for X-UI API authentication (required)
 panel-username: "your-username"
 
-# Password for 3X-UI API authentication (required)
+# Password for X-UI API authentication (required)
 panel-password: "your-password"
 
 # Skip SSL certificate verification (NOT recommended for production)

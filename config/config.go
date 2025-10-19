@@ -30,11 +30,10 @@ type CLI struct {
 func (v VersionFlag) Decode(ctx *kong.DecodeContext) error { return nil }
 func (v VersionFlag) IsBool() bool                         { return true }
 func (v VersionFlag) BeforeApply(app *kong.Kong, vars kong.Vars) error {
-	fmt.Println("3X-UI Exporter (Fork)")
+	fmt.Println("X-UI Exporter (Fork)")
 	fmt.Printf("Version:\t %s\n", vars["version"])
 	fmt.Printf("Commit:\t %s\n", vars["commit"])
-	fmt.Printf("Github (Marzban): https://github.com/kutovoys/marzban-exporter\n")
-	fmt.Printf("GitHub (3X-UI Fork): https://github.com/hteppl/3x-ui-exporter\n")
+	fmt.Printf("GitHub (X-UI Fork): https://github.com/sedyh/x-ui-exporter\n")
 	app.Exit(0)
 	return nil
 }
@@ -44,7 +43,7 @@ func Parse(version, commit string) (*CLI, error) {
 	// Parse CLI flags first
 	_ = kong.Parse(&config,
 		kong.Name("x-ui-exporter"),
-		kong.Description("A command-line application for exporting 3X-UI metrics."),
+		kong.Description("A command-line application for exporting X-UI metrics."),
 		kong.Vars{
 			"version": version,
 			"commit":  commit,

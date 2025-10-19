@@ -57,24 +57,24 @@ var (
 
 	// Response object pools
 	apiResponsePool = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return &client3xui.ApiResponse{}
 		},
 	}
 	serverStatusPool = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return &client3xui.ServerStatusResponse{}
 		},
 	}
 	inboundsResponsePool = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return &client3xui.GetInboundsResponse{}
 		},
 	}
 
 	// Buffer pool for request bodies
 	bufferPool = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return new(bytes.Buffer)
 		},
 	}
@@ -136,7 +136,7 @@ func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 	}
 
 	for _, cookie := range resp.Cookies() {
-		if cookie.Name == "3x-ui" {
+		if cookie.Name == "x-ui" {
 			cookieCache.Cookie = *cookie
 			cookieCache.ExpiresAt = time.Now().Add(time.Minute * 59)
 		}
@@ -150,7 +150,7 @@ func (a *APIClient) GetAuthToken() (*http.Cookie, error) {
 }
 
 func (a *APIClient) FetchOnlineUsersCount(cookie *http.Cookie) error {
-	// Try the new path first for 3X-UI v2.7.0+
+	// Try the new path first for X-UI v2.7.0+
 	body, err := a.sendRequest("/panel/api/inbounds/onlines", http.MethodPost, cookie)
 	if err != nil || len(body) == 0 {
 		body, err = a.sendRequest("/panel/inbound/onlines", http.MethodPost, cookie)
@@ -180,7 +180,7 @@ func (a *APIClient) FetchServerStatus(cookie *http.Cookie) error {
 	// Clear old version metric to avoid accumulating obsolete label values
 	metrics.XrayVersion.Reset()
 
-	// Try GET first for 3X-UI v2.7.0+
+	// Try GET first for X-UI v2.7.0+
 	body, err := a.sendRequest("/panel/api/server/status", http.MethodGet, cookie)
 	if err != nil || len(body) == 0 {
 		body, err = a.sendRequest("/server/status", http.MethodPost, cookie)

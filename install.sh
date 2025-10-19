@@ -31,14 +31,14 @@ esac
 
 # Get latest release tag
 echo "Fetching latest release information..."
-LATEST_RELEASE=$(curl -s https://api.github.com/repos/hteppl/3x-ui-exporter/releases/latest)
+LATEST_RELEASE=$(curl -s https://api.github.com/repos/sedyh/x-ui-exporter/releases/latest)
 if [ $? -ne 0 ] || [ -z "$LATEST_RELEASE" ]; then
     echo "Failed to fetch release information. Installation aborted."
     exit 1
 fi
 
 VERSION=$(echo "${LATEST_RELEASE}" | grep -Po '"tag_name": "\K.*?(?=")')
-echo -e "\n${PURPLE}✨ Starting 3X-UI Exporter $VERSION automated install wizard...\033[0m"
+echo -e "\n${PURPLE}✨ Starting X-UI Exporter $VERSION automated install wizard...\033[0m"
 
 # Create dedicated system user for running the service
 step 1 "Creating x-ui-exporter user"
@@ -52,8 +52,8 @@ fi
 
 # Download the appropriate archive
 TEMP_DIR=$(mktemp -d)
-ARCHIVE_NAME="3x-ui-exporter-${VERSION}-linux-${ARCH}.tar.gz"
-DOWNLOAD_URL="https://github.com/hteppl/3x-ui-exporter/releases/download/${VERSION}/${ARCHIVE_NAME}"
+ARCHIVE_NAME="x-ui-exporter-${VERSION}-linux-${ARCH}.tar.gz"
+DOWNLOAD_URL="https://github.com/sedyh/x-ui-exporter/releases/download/${VERSION}/${ARCHIVE_NAME}"
 
 step 2 "Downloading binary from: ${DOWNLOAD_URL}"
 curl -L -o "${TEMP_DIR}/${ARCHIVE_NAME}" "${DOWNLOAD_URL}"
@@ -127,14 +127,14 @@ fi
 if [ $SKIP_CONFIG_SETUP -eq 0 ]; then
     # Download example config file
     echo "Downloading example config from GitHub..."
-    curl -s -o "$CONFIG_FILE" https://raw.githubusercontent.com/hteppl/3x-ui-exporter/main/config-example.yaml
+    curl -s -o "$CONFIG_FILE" https://raw.githubusercontent.com/sedyh/x-ui-exporter/main/config-example.yaml
     if [ $? -ne 0 ]; then
         echo "Failed to download config file. Installation aborted."
         exit 1
     fi
 
     # Interactive configuration
-    echo "Provide your 3X-UI panel details:"
+    echo "Provide your X-UI panel details:"
 
     # Get Panel URL
     while true; do
@@ -229,7 +229,7 @@ chown -R x-ui-exporter:x-ui-exporter /etc/x-ui-exporter
 
 # Create systemd service file
 step 6 "Downloading systemd service file from GitHub..."
-curl -s -o /etc/systemd/system/x-ui-exporter.service https://raw.githubusercontent.com/hteppl/3x-ui-exporter/main/x-ui-exporter.service
+curl -s -o /etc/systemd/system/x-ui-exporter.service https://raw.githubusercontent.com/sedyh/x-ui-exporter/main/x-ui-exporter.service
 
 if [ $? -ne 0 ]; then
     echo "Failed to create service file. Installation aborted."
@@ -272,11 +272,10 @@ fi
 
 sudo systemctl status x-ui-exporter --no-pager
 
-echo -e "\n${PURPLE}✅ 3X-UI Exporter is installed!"
+echo -e "\n${PURPLE}✅ X-UI Exporter is installed!"
 echo -e "${GREEN}\nCheck status:      ${NC}sudo systemctl status x-ui-exporter --no-pager"
 echo -e "${GREEN}Binary path:       ${NC}/usr/local/bin/x-ui-exporter"
 echo -e "${GREEN}Config path:       ${NC}$CONFIG_FILE"
 echo ""
 echo -e "You can view logs with: journalctl -u x-ui-exporter.service"
-echo -e "Support the project: \033[1;33mhttps://pay.cloudtips.ru/p/67507843${NC}"
 echo ""

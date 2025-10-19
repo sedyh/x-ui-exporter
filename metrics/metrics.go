@@ -2,6 +2,8 @@ package metrics
 
 import "github.com/prometheus/client_golang/prometheus"
 
+// Help is kept the same in order to avoid breaking changes.
+
 var (
 	// User-related metrics
 	OnlineUsersCount = prometheus.NewGauge(
@@ -40,7 +42,7 @@ var (
 	XrayVersion = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "x_ui_xray_version",
-			Help: "XRay version used by 3X-UI",
+			Help: "XRay version used by X-UI",
 		},
 		[]string{"version"},
 	)
