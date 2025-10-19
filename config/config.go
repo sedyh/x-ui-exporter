@@ -31,9 +31,11 @@ func (v VersionFlag) Decode(ctx *kong.DecodeContext) error { return nil }
 func (v VersionFlag) IsBool() bool                         { return true }
 func (v VersionFlag) BeforeApply(app *kong.Kong, vars kong.Vars) error {
 	fmt.Println("X-UI Exporter (Fork)")
-	fmt.Printf("Version:\t %s\n", vars["version"])
-	fmt.Printf("Commit:\t %s\n", vars["commit"])
-	fmt.Printf("GitHub (X-UI Fork): https://github.com/sedyh/x-ui-exporter\n")
+	fmt.Printf("Version: %s\n", vars["version"])
+	fmt.Printf("Commit:  %s\n", vars["commit"])
+	fmt.Printf("GitHub (X-UI Fork):  https://github.com/sedyh/x-ui-exporter\n")
+	fmt.Printf("GitHub (3X-UI Fork): https://github.com/hteppl/3x-ui-exporter\n")
+	fmt.Printf("Github (Marzban):    https://github.com/kutovoys/marzban-exporter\n")
 	app.Exit(0)
 	return nil
 }
